@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Leon & Jamaica ❤️</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<div id="loginPage" class="login-page">
+
+    <div class="login-box">
+
+        <div class="heart">❤️</div>
+
+        <h1>Leon & Jamaica</h1>
+
+        <p>Our Private Memories</p>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Email"
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Password"
+        >
+
+        <button onclick="login()">
+            Enter Our Memories
+        </button>
+
+        <p id="loginMessage"></p>
+
+    </div>
+
+</div>
+
+
+<div id="mainPage" class="hidden">
+
+    <header>
+
+        <h1>Leon & Jamaica ❤️</h1>
+
+        <p>Our little place of memories</p>
+
+        <button onclick="logout()" class="logout">
+            Logout
+        </button>
+
+    </header>
+
+
+    <nav>
+
+        <button onclick="showSection('photos')">
+            📸 Photos
+        </button>
+
+        <button onclick="showSection('videos')">
+            🎥 Videos
+        </button>
+
+        <button onclick="showSection('music')">
+            🎵 Music
+        </button>
+
+        <button onclick="showSection('messages')">
+            💌 Messages
+        </button>
+
+    </nav>
+
+
+    <main>
+
+        <section id="photos" class="section">
+
+            <h2>📸 Our Photos</h2>
+
+            <div id="photoGallery" class="gallery"></div>
+
+        </section>
+
+
+        <section id="videos" class="section hidden">
+
+            <h2>🎥 Our Videos</h2>
+
+            <div id="videoGallery"></div>
+
+        </section>
+
+
+        <section id="music" class="section hidden">
+
+            <h2>🎵 Our Music</h2>
+
+            <div id="musicGallery"></div>
+
+        </section>
+
+
+        <section id="messages" class="section hidden">
+
+            <h2>💌 Our Messages</h2>
+
+            <div id="messageGallery"></div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
