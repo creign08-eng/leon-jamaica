@@ -411,7 +411,6 @@ async function renameMemory(memoryId) {
 // ==========================================
 
 async function createMemoryCard(memory) {
-async function createMemoryCard(memory) {
 
     const card =
         document.createElement("div");
