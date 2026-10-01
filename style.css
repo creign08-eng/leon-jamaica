@@ -1149,3 +1149,141 @@ body.light .brand {
         height: 95px !important;
     }
 }
+/* =====================================
+   LEON & MAJICA MUSIC PLAYER
+   ===================================== */
+
+.spotify-player {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+    padding: 24px;
+    margin: 20px 0 30px;
+    border-radius: 20px;
+    color: #fff;
+    background: linear-gradient(135deg, #242424, #101010 75%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.spotify-artwork {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #5b164b, #191919);
+    font-size: 64px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.spotify-artwork img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.spotify-details {
+    min-width: 0;
+}
+
+.spotify-label {
+    margin: 0 0 8px;
+    color: #a6e3b7;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.spotify-details h2 {
+    margin: 0 0 6px;
+    font-size: clamp(20px, 4vw, 30px);
+    overflow-wrap: anywhere;
+}
+
+#spotifySongSubtitle {
+    margin: 0 0 20px;
+    color: #b3b3b3;
+    font-size: 14px;
+}
+
+.spotify-progress {
+    display: block;
+    width: 100%;
+    height: 5px;
+    margin: 15px 0 8px;
+    cursor: pointer;
+    accent-color: #1ed760;
+}
+
+.spotify-time {
+    display: flex;
+    justify-content: space-between;
+    color: #b3b3b3;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.spotify-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin-top: 18px;
+}
+
+.spotify-controls button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    background: transparent;
+    font-size: 23px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.spotify-controls button:hover {
+    transform: scale(1.1);
+}
+
+.spotify-controls .spotify-play-button {
+    width: 54px;
+    height: 54px;
+    color: #111;
+    background: #1ed760;
+    font-size: 24px;
+}
+
+.spotify-controls .spotify-play-button:hover {
+    background: #49e582;
+}
+
+@media (max-width: 600px) {
+    .spotify-player {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 18px;
+    }
+
+    .spotify-artwork {
+        width: min(100%, 260px);
+        justify-self: center;
+    }
+
+    .spotify-details h2 {
+        font-size: 23px;
+    }
+
+    .spotify-controls {
+        gap: 28px;
+    }
+}
