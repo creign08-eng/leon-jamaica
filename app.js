@@ -2900,33 +2900,51 @@ async function loadLoveHero() {
     const hero =
         document.getElementById("loveHero");
 
-    if (!hero) return;
+    if (!hero) {
+        console.log("Hero element not found.");
+        return;
+    }
 
     const { data, error } =
         await supabaseClient
             .from("memories")
-            .select("*")
+            .select("file_path,title,created_at")
             .eq("media_type", "photo")
             .order("created_at", { ascending: false })
             .limit(1);
 
     if (error) {
-        console.error("Unable to load hero photo:", error);
+        console.error(
+            "Hero photo database error:",
+            error
+        );
         return;
     }
 
     if (!data || data.length === 0) {
+        console.log("No photos found for hero.");
         return;
     }
 
     const photo = data[0];
 
+    console.log(
+        "Hero photo:",
+        photo.title,
+        photo.file_path
+    );
+
     const url =
         await getSignedUrl(photo.file_path);
 
-    if (!url) return;
+    if (!url) {
+        console.error(
+            "Could not create hero photo URL."
+        );
+        return;
+    }
 
-    hero.style.backgroundImage =
+    hero.style.background =
         `linear-gradient(
             to right,
             rgba(0, 0, 0, 0.88),
@@ -2935,6 +2953,14 @@ async function loadLoveHero() {
         ),
         url("${url}")`;
 
-    hero.style.backgroundSize = "cover";
-    hero.style.backgroundPosition = "center";
+    hero.style.backgroundSize =
+        "cover";
+
+    hero.style.backgroundPosition =
+        "center";
+
+    hero.style.backgroundRepeat =
+        "no-repeat";
+
+    console.log("Hero background loaded successfully.");
 }
