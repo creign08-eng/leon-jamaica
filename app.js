@@ -472,12 +472,11 @@ async function createMemoryCard(memory) {
             ${
                 memory.media_type === "music"
                     ? `
-                        <audio
-                            controls
-                            style="width:100%"
-                        >
-                            <source src="${url}">
-                        </audio>
+                        <button
+    onclick="playMemorySong('${memory.id}')"
+>
+    ▶ Play Song
+</button>
                     `
                     : ""
             }
