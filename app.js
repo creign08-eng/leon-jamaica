@@ -1,481 +1,4 @@
-// ==========================================
-// LEON & MAJICA - APP
-// ==========================================
-
-const SUPABASE_URL = "https://cbxchhonkkrlwisjjonk.supabase.co";
-
-const SUPABASE_KEY =
-    "sb_publishable_U2CbY-32ZYfAtp7YRlokcQ_uK8bKsQ6";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-
-// ==========================================
-// LOGIN
-// ==========================================
-
-const LOGIN_USERNAME = "leon&majica";
-const LOGIN_EMAIL = "creign_liu17@yahoo.com";
-const LOGIN_PASSWORD = "12082000";
-
-
-async function login() {
-  
-    const usernameInput =
-        document.getElementById("loginUsername");
-
-    const passwordInput =
-        document.getElementById("loginPassword");
-
-    const error =
-        document.getElementById("loginError");
-
-    const loginButton =
-        document.querySelector(
-            '#loginPage button[onclick="login()"]'
-        );
-
-    if (!usernameInput || !passwordInput || !error) {
-        alert("Login page could not be loaded correctly.");
-        return;
-    }
-
-    const username =
-        usernameInput.value.trim();
-
-    const password =
-        passwordInput.value;
-
-    error.textContent = "";
-
-    if (username !== LOGIN_USERNAME) {
-
-        error.textContent =
-            "Incorrect username.";
-
-        return;
-    }
-
-    if (password !== LOGIN_PASSWORD) {
-
-        error.textContent =
-            "Incorrect password.";
-
-        return;
-    }
-
-    if (!window.supabase) {
-
-        error.textContent =
-            "Supabase is not loaded. Please refresh the page.";
-
-        return;
-    }
-
-    if (loginButton) {
-        loginButton.disabled = true;
-        loginButton.textContent = "Entering...";
-    }
-
-    try {
-
-        const result =
-            await supabaseClient.auth.signInWithPassword({
-                email: LOGIN_EMAIL,
-                password: LOGIN_PASSWORD
-            });
-
-        if (result.error) {
-
-            console.error(
-                "Supabase login error:",
-                result.error
-            );
-
-            error.textContent =
-                result.error.message;
-
-            return;
-        }
-
-        await showWebsite();
-
-    } catch (err) {
-
-        console.error(
-            "Login error:",
-            err
-        );
-
-        error.textContent =
-            "Unable to log in. Please refresh the page and try again.";
-
-    } finally {
-
-        if (loginButton) {
-            loginButton.disabled = false;
-            loginButton.textContent =
-                "Enter Our Memories";
-        }
-    }
 }
-
-
-// Allow the Enter key to log in
-document.addEventListener("DOMContentLoaded", () => {
-
-    const usernameInput =
-        document.getElementById("loginUsername");
-
-    const passwordInput =
-        document.getElementById("loginPassword");
-
-    if (usernameInput) {
-
-        usernameInput.addEventListener(
-            "keydown",
-            event => {
-
-                if (event.key === "Enter") {
-                    login();
-                }
-
-            }
-        );
-    }
-
-    if (passwordInput) {
-
-        passwordInput.addEventListener(
-            "keydown",
-            event => {
-
-                if (event.key === "Enter") {
-                    login();
-                }
-
-            }
-        );
-    }
-});
-
-
-async function logout() {
-
-    try {
-
-        await supabaseClient.auth.signOut();
-
-    } catch (error) {
-
-        console.error(
-            "Logout error:",
-            error
-        );
-    }
-
-    document
-        .getElementById("website")
-        .classList.add("hidden");
-
-    document
-        .getElementById("loginPage")
-        .classList.remove("hidden");
-}
-
-
-// ==========================================
-// STARTUP
-// ==========================================
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-    const {
-        data: { session }
-    } = await supabaseClient.auth.getSession();
-
-    if (session) {
-        showWebsite();
-    } else {
-        document
-            .getElementById("loginPage")
-            .classList.remove("hidden");
-
-        document
-            .getElementById("website")
-            .classList.add("hidden");
-    }
-
-    restoreTheme();
-    loadBackground();
-});
-
-
-async function showWebsite() {
-
-    document
-        .getElementById("loginPage")
-        .classList.add("hidden");
-
-    document
-        .getElementById("website")
-        .classList.remove("hidden");
-
-    await loadEverything();
-}
-
-
-// ==========================================
-// NAVIGATION
-// ==========================================
-
-function showSection(sectionId) {
-
-    document
-        .querySelectorAll(".section")
-        .forEach(section => {
-            section.classList.add("hidden");
-        });
-
-    const section =
-        document.getElementById(sectionId);
-
-    if (section) {
-        section.classList.remove("hidden");
-    }
-
-    if (sectionId === "homeSection") {
-        loadRecentMemories();
-    }
-
-    if (sectionId === "albumsSection") {
-        loadAlbums();
-    }
-
-    if (sectionId === "videosSection") {
-        loadVideos();
-    }
-
-    if (sectionId === "playlistsSection") {
-        loadPlaylists();
-    }
-
-    if (sectionId === "favoritesSection") {
-        loadFavorites();
-    }
-
-    if (sectionId === "messagesSection") {
-        loadMessages();
-    }
-
-    if (sectionId === "uploadSection") {
-        loadAlbumOptions();
-        loadPlaylistOptions();
-    }
-
-    if (sectionId === "settingsSection") {
-        loadBackgroundPhotos();
-    }
-}
-
-
-// ==========================================
-// LOAD EVERYTHING
-// ==========================================
-
-async function loadEverything() {
-
-    await loadRecentMemories();
-    await loadAlbums();
-    await loadVideos();
-    await loadPlaylists();
-    await loadMessages();
-
-    await loadAlbumOptions();
-    await loadPlaylistOptions();
-    await loadBackgroundPhotos();
-    loadLoveHero();
-}
-
-
-// ==========================================
-// SIGNED URL
-// ==========================================
-
-async function getSignedUrl(filePath) {
-
-    if (!filePath) return "";
-
-    const { data, error } =
-        await supabaseClient.storage
-            .from("memories")
-            .createSignedUrl(filePath, 3600);
-
-    if (error) {
-        console.error(error);
-        return "";
-    }
-
-    return data.signedUrl;
-}
-
-
-// ==========================================
-// RECENT MEMORIES
-// ==========================================
-
-async function loadRecentMemories() {
-
-    const container =
-        document.getElementById("recentMemories");
-
-    if (!container) return;
-
-    container.innerHTML = "Loading...";
-
-    const { data, error } =
-        await supabaseClient
-            .from("memories")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(12);
-
-    if (error) {
-        console.error(error);
-        container.innerHTML = "Unable to load memories.";
-        return;
-    }
-
-    container.innerHTML = "";
-
-    if (!data || data.length === 0) {
-        container.innerHTML =
-            "<p>No memories yet. Add your first memory ❤️</p>";
-        return;
-    }
-
-    for (const memory of data) {
-        container.appendChild(
-            await createMemoryCard(memory)
-        );
-    }
-}
-async function renameMemory(memoryId) {
-
-    const { data: memory, error: fetchError } =
-        await supabaseClient
-            .from("memories")
-            .select("id,title")
-            .eq("id", memoryId)
-            .single();
-
-    if (fetchError || !memory) {
-        alert("Unable to find this file.");
-        return;
-    }
-
-    const newName = prompt(
-        "Enter a new name:",
-        memory.title || "Untitled"
-    );
-
-    if (newName === null) {
-        return;
-    }
-
-    const trimmedName = newName.trim();
-
-    if (!trimmedName) {
-        alert("Please enter a name.");
-        return;
-    }
-
-    const { error } =
-        await supabaseClient
-            .from("memories")
-            .update({
-                title: trimmedName
-            })
-            .eq("id", memoryId);
-
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    await loadEverything();
-
-    alert("File renamed successfully ❤️");
-}
-
-// ==========================================
-// MEMORY CARD
-// ==========================================
-
-async function createMemoryCard(memory) {
-
-    const card =
-        document.createElement("div");
-
-    card.className = "card";
-
-    const url =
-        await getSignedUrl(memory.file_path);
-
-    let media = "";
-
-    if (memory.media_type === "photo") {
-
-        media =
-            `<img
-                src="${url}"
-                alt="${escapeHtml(memory.title || "Photo")}"
-                onclick="openMediaViewer('${url}','photo','${escapeHtml(memory.title || "Photo")}')"
-                style="
-                    cursor:pointer;
-                    width:100%;
-                    display:block;
-                "
-            >`;
-
-    } else if (memory.media_type === "video") {
-
-        media =
-            `<video
-                controls
-                preload="metadata"
-                onclick="openMediaViewer('${url}','video','${escapeHtml(memory.title || "Video")}')"
-                style="
-                    cursor:pointer;
-                    width:100%;
-                    display:block;
-                "
-            >
-                <source src="${url}">
-            </video>`;
-
-    } else if (memory.media_type === "music") {
-
-        media =
-            `<div style="padding:40px;text-align:center;font-size:45px">
-                🎵
-            </div>`;
-    }
-
-    const favoriteButton =
-        `<button
-            class="favorite-overlay"
-            onclick="toggleFavorite('${memory.id}', ${memory.is_favorite === true})"
-            title="${memory.is_favorite === true ? "Remove from Favorites" : "Add to Favorites"}"
-        >
-            ${memory.is_favorite === true ? "❤️" : "♡"}
-        </button>`;
-
-    card.innerHTML = `
-        ${media}
 
         ${favoriteButton}
 
@@ -2968,4 +2491,54 @@ alert("PHOTO FOUND: " + data[0].title);
         "no-repeat";
 
     console.log("Hero background loaded successfully.");
+}
+async function loadLoveHero() {
+
+    const hero =
+        document.getElementById("loveHero");
+
+    if (!hero) {
+        return;
+    }
+
+    const { data, error } =
+        await supabaseClient
+            .from("memories")
+            .select("file_path,title,created_at")
+            .eq("media_type", "photo")
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+    if (error) {
+        console.error("Hero photo error:", error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        console.log("No photos found for hero.");
+        return;
+    }
+
+    const photo = data[0];
+
+    const url =
+        await getSignedUrl(photo.file_path);
+
+    if (!url) {
+        console.error("Could not create hero photo URL.");
+        return;
+    }
+
+    hero.style.backgroundImage =
+        `linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.88),
+            rgba(0, 0, 0, 0.45),
+            rgba(0, 0, 0, 0.18)
+        ),
+        url("${url}")`;
+
+    hero.style.backgroundSize = "cover";
+    hero.style.backgroundPosition = "center";
+    hero.style.backgroundRepeat = "no-repeat";
 }
