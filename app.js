@@ -233,6 +233,7 @@ async function showWebsite() {
 // ==========================================
 
 function showSection(sectionId) {
+function showSection(sectionId) {
 
     document
         .querySelectorAll(".section")
@@ -261,6 +262,10 @@ function showSection(sectionId) {
 
     if (sectionId === "playlistsSection") {
         loadPlaylists();
+    }
+
+    if (sectionId === "favoritesSection") {
+        loadFavorites();
     }
 
     if (sectionId === "messagesSection") {
