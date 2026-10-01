@@ -4115,3 +4115,77 @@ async function playMemorySong(memoryId) {
 
     await playSong(index);
 }
+async function addMemoryToPlaylist(memoryId) {
+
+    const { data: playlists, error } =
+        await supabaseClient
+            .from("playlists")
+            .select("*")
+            .order("created_at", {
+                ascending: true
+            });
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    if (!playlists || playlists.length === 0) {
+        alert("You don't have any playlists yet. Create a playlist first.");
+        return;
+    }
+
+    const options = playlists
+        .map(
+            playlist =>
+                `${playlist.id}|${playlist.name}`
+        )
+        .join("\n");
+
+    const choice =
+        prompt(
+            "Enter the number of the playlist:\n\n" +
+            playlists
+                .map(
+                    (playlist, index) =>
+                        `${index + 1}. ${playlist.name}`
+                )
+                .join("\n")
+        );
+
+    if (!choice) {
+        return;
+    }
+
+    const index =
+        parseInt(choice, 10) - 1;
+
+    if (
+        isNaN(index) ||
+        index < 0 ||
+        index >= playlists.length
+    ) {
+        alert("Invalid playlist number.");
+        return;
+    }
+
+    const playlist =
+        playlists[index];
+
+    const { error: updateError } =
+        await supabaseClient
+            .from("memories")
+            .update({
+                playlist_id: playlist.id
+            })
+            .eq("id", memoryId);
+
+    if (updateError) {
+        alert(updateError.message);
+        return;
+    }
+
+    alert(
+        `Added to "${playlist.name}" ❤️`
+    );
+}
