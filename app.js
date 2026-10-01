@@ -2784,3 +2784,10 @@ function closeMediaViewer() {
         viewer.classList.add("hidden");
     }
 }
+document.getElementById("mediaViewer")?.addEventListener("click", function (event) {
+
+    if (event.target === this) {
+        closeMediaViewer();
+    }
+
+});
