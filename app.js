@@ -1,5 +1,3 @@
-alert("APP.JS IS RUNNING");
-
 // ==========================================
 // LEON & MAJICA - APP
 // ==========================================
@@ -26,8 +24,6 @@ const LOGIN_PASSWORD = "12082000";
 
 async function login() {
   
-    alert("LOGIN FUNCTION IS WORKING");
-    
     const usernameInput =
         document.getElementById("loginUsername");
 
