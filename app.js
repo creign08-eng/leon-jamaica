@@ -3575,89 +3575,84 @@ async function toggleFavorite(
 
 async function loadLoveHero() {
 
-    const hero =
-        document.getElementById(
-            "loveHero"
-        );
+    const hero = document.getElementById("loveHero");
 
     if (!hero) {
         return;
     }
 
-    const { data, error } =
-        await supabaseClient
+    try {
+
+        const { data, error } = await supabaseClient
             .from("memories")
-            .select(
-                "file_path,title,created_at"
-            )
-            .eq(
-                "media_type",
-                "photo"
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            )
+            .select("file_path,title,created_at")
+            .eq("media_type", "photo")
+            .order("created_at", {
+                ascending: false
+            })
             .limit(1);
 
-    if (error) {
+        if (error) {
+            console.error("Hero photo error:", error);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            console.log("No photos found for hero.");
+            return;
+        }
+
+        const photo = data[0];
+
+        const { data: signedData, error: signedError } =
+            await supabaseClient
+                .storage
+                .from("memories")
+                .createSignedUrl(
+                    photo.file_path,
+                    3600
+                );
+
+        if (signedError) {
+            console.error(
+                "Hero signed URL error:",
+                signedError
+            );
+            return;
+        }
+
+        if (!signedData || !signedData.signedUrl) {
+            console.error(
+                "Hero signed URL is missing."
+            );
+            return;
+        }
+
+        const url = signedData.signedUrl;
+
+        hero.style.backgroundImage =
+            `linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.88),
+                rgba(0, 0, 0, 0.45),
+                rgba(0, 0, 0, 0.18)
+            ),
+            url("${url}")`;
+
+        hero.style.backgroundSize = "cover";
+        hero.style.backgroundPosition = "center";
+        hero.style.backgroundRepeat = "no-repeat";
+
+        console.log("Hero background loaded successfully.");
+
+    } catch (error) {
 
         console.error(
-            "Hero photo error:",
+            "Unexpected hero error:",
             error
         );
 
-        return;
     }
-
-    if (
-        !data ||
-        data.length === 0
-    ) {
-
-        console.log(
-            "No photos found for hero."
-        );
-
-        return;
-    }
-
-    const photo =
-        data[0];
-
-    const url =
-        await getSignedUrl(
-            photo.file_path
-        );
-
-    if (!url) {
-
-        console.error(
-            "Could not create hero photo URL."
-        );
-
-        return;
-    }
-
-    hero.style.backgroundImage =
-        `linear-gradient(
-            to right,
-            rgba(0, 0, 0, 0.88),
-            rgba(0, 0, 0, 0.45),
-            rgba(0, 0, 0, 0.18)
-        ),
-        url("${url}")`;
-
-    hero.style.backgroundSize =
-        "cover";
-
-    hero.style.backgroundPosition =
-        "center";
-
-    hero.style.backgroundRepeat =
-        "no-repeat";
 }
 
 
