@@ -673,3 +673,26 @@ body.light .brand {
     transform: scale(1.1);
     background: rgba(0, 0, 0, 0.85);
 }
+/* ==========================================
+   FAVORITES HEADER
+   ========================================== */
+
+.favorites-label {
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: 0.65;
+    text-transform: uppercase;
+}
+
+.favorites-heading {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.favorites-count {
+    margin: 8px 0 0;
+    font-size: 14px;
+    opacity: 0.65;
+}
