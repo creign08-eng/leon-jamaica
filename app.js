@@ -328,6 +328,13 @@ async function deleteMemory(id, filePath) {
         return;
     }
 
+    const { data: memoryToDelete } =
+        await supabaseClient
+            .from("memories")
+            .select("album_id,file_path")
+            .eq("id", id)
+            .single();
+
     const { error } =
         await supabaseClient
             .from("memories")
@@ -345,6 +352,34 @@ async function deleteMemory(id, filePath) {
             .storage
             .from("memories")
             .remove([filePath]);
+    }
+
+    // Remove deleted file as album cover if necessary
+    if (
+        memoryToDelete &&
+        memoryToDelete.album_id &&
+        memoryToDelete.file_path
+    ) {
+
+        const { data: album } =
+            await supabaseClient
+                .from("albums")
+                .select("cover_path")
+                .eq("id", memoryToDelete.album_id)
+                .single();
+
+        if (
+            album &&
+            album.cover_path === memoryToDelete.file_path
+        ) {
+
+            await supabaseClient
+                .from("albums")
+                .update({
+                    cover_path: null
+                })
+                .eq("id", memoryToDelete.album_id);
+        }
     }
 
     await loadEverything();
@@ -388,23 +423,49 @@ async function loadAlbums() {
 
     for (const album of data) {
 
-        const { data: coverPhotos } =
-            await supabaseClient
-                .from("memories")
-                .select("file_path, title")
-                .eq("album_id", album.id)
-                .eq("media_type", "photo")
-                .order("created_at", { ascending: false })
-                .limit(1);
-
         let coverUrl = "";
+        let coverType = "";
 
-        if (coverPhotos && coverPhotos.length > 0) {
+        // Use manually selected cover first
+        if (album.cover_path) {
 
             coverUrl =
-                await getSignedUrl(
-                    coverPhotos[0].file_path
-                );
+                await getSignedUrl(album.cover_path);
+
+            const { data: selectedCover } =
+                await supabaseClient
+                    .from("memories")
+                    .select("media_type")
+                    .eq("file_path", album.cover_path)
+                    .maybeSingle();
+
+            if (selectedCover) {
+                coverType = selectedCover.media_type;
+            }
+        }
+
+        // Fallback to newest photo/video
+        if (!coverUrl) {
+
+            const { data: coverPhotos } =
+                await supabaseClient
+                    .from("memories")
+                    .select("file_path, title, media_type")
+                    .eq("album_id", album.id)
+                    .in("media_type", ["photo", "video"])
+                    .order("created_at", { ascending: false })
+                    .limit(1);
+
+            if (coverPhotos && coverPhotos.length > 0) {
+
+                coverUrl =
+                    await getSignedUrl(
+                        coverPhotos[0].file_path
+                    );
+
+                coverType =
+                    coverPhotos[0].media_type;
+            }
         }
 
         const folder =
@@ -412,7 +473,34 @@ async function loadAlbums() {
 
         folder.className = "folder";
 
-        if (coverUrl) {
+        if (coverUrl && coverType === "video") {
+
+            folder.innerHTML = `
+                <div style="
+                    width:100%;
+                    height:180px;
+                    border-radius:14px;
+                    overflow:hidden;
+                    margin-bottom:12px;
+                    background:#111;
+                ">
+
+                    <video
+                        src="${coverUrl}"
+                        muted
+                        preload="metadata"
+                        style="
+                            width:100%;
+                            height:100%;
+                            object-fit:cover;
+                            display:block;
+                        "
+                    ></video>
+
+                </div>
+            `;
+
+        } else if (coverUrl) {
 
             folder.innerHTML = `
                 <div style="
@@ -477,6 +565,10 @@ async function loadAlbums() {
                     Open
                 </button>
 
+                <button onclick="changeAlbumCover('${album.id}')">
+                    🖼️ Cover
+                </button>
+
                 <button onclick="renameAlbum('${album.id}')">
                     ✏️ Rename
                 </button>
@@ -499,6 +591,10 @@ async function loadAlbums() {
     }
 }
 
+
+// ==========================================
+// OPEN ALBUM
+// ==========================================
 
 async function openAlbum(albumId) {
 
@@ -682,6 +778,10 @@ async function loadAlbumManager() {
                 Description
             </button>
 
+            <button onclick="changeAlbumCover('${album.id}')">
+                🖼️ Cover
+            </button>
+
             <button onclick="deleteAlbum('${album.id}')">
                 Delete
             </button>
@@ -794,6 +894,252 @@ async function editAlbumDescription(id) {
 
 
 // ==========================================
+// CHANGE ALBUM COVER
+// ==========================================
+
+async function changeAlbumCover(albumId) {
+
+    const { data: album, error: albumError } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .eq("id", albumId)
+            .single();
+
+    if (albumError || !album) {
+
+        alert(
+            "Unable to open this folder."
+        );
+
+        return;
+    }
+
+    const list =
+        document.getElementById("coverSelectionList");
+
+    const modal =
+        document.getElementById("coverModal");
+
+    if (!list || !modal) {
+
+        alert(
+            "Cover selector is unavailable."
+        );
+
+        return;
+    }
+
+    list.innerHTML =
+        "Loading memories...";
+
+    modal.classList.remove("hidden");
+
+    const { data: memories, error } =
+        await supabaseClient
+            .from("memories")
+            .select("id,title,file_path,media_type")
+            .eq("album_id", albumId)
+            .in("media_type", ["photo", "video"])
+            .order("created_at", { ascending: false });
+
+    if (error) {
+
+        list.innerHTML =
+            `<p>${escapeHtml(error.message)}</p>`;
+
+        return;
+    }
+
+    if (!memories || memories.length === 0) {
+
+        list.innerHTML = `
+            <p>
+                This folder has no photos or videos yet.
+            </p>
+        `;
+
+        return;
+    }
+
+    list.innerHTML = "";
+
+    // Remove current cover button
+    const removeButton =
+        document.createElement("button");
+
+    removeButton.textContent =
+        "❌ Remove Current Cover";
+
+    removeButton.style.marginBottom =
+        "15px";
+
+    removeButton.onclick =
+        () => removeAlbumCover(albumId);
+
+    list.appendChild(removeButton);
+
+
+    // Memory choices
+    for (const memory of memories) {
+
+        const item =
+            document.createElement("div");
+
+        item.style.marginBottom = "15px";
+        item.style.padding = "10px";
+        item.style.borderRadius = "12px";
+        item.style.background = "rgba(255,255,255,0.06)";
+
+        const url =
+            await getSignedUrl(memory.file_path);
+
+        let preview = "";
+
+        if (memory.media_type === "photo") {
+
+            preview = `
+                <img
+                    src="${url}"
+                    alt="${escapeHtml(memory.title || "Photo")}"
+                    style="
+                        width:100%;
+                        max-height:180px;
+                        object-fit:cover;
+                        border-radius:10px;
+                        display:block;
+                        margin-bottom:8px;
+                    "
+                >
+            `;
+
+        } else {
+
+            preview = `
+                <video
+                    src="${url}"
+                    muted
+                    controls
+                    preload="metadata"
+                    style="
+                        width:100%;
+                        max-height:180px;
+                        object-fit:cover;
+                        border-radius:10px;
+                        display:block;
+                        margin-bottom:8px;
+                    "
+                ></video>
+            `;
+        }
+
+        item.innerHTML = `
+            ${preview}
+
+            <strong>
+                ${memory.media_type === "photo" ? "📸" : "🎬"}
+                ${escapeHtml(memory.title || "Untitled")}
+            </strong>
+
+            <br>
+
+            <button
+                style="margin-top:8px"
+                onclick="setAlbumCover('${albumId}','${memory.id}')"
+            >
+                ❤️ Use This as Cover
+            </button>
+        `;
+
+        list.appendChild(item);
+    }
+}
+
+
+async function setAlbumCover(albumId, memoryId) {
+
+    const { data: memory, error: memoryError } =
+        await supabaseClient
+            .from("memories")
+            .select("file_path")
+            .eq("id", memoryId)
+            .single();
+
+    if (memoryError || !memory) {
+
+        alert(
+            "Unable to find that memory."
+        );
+
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("albums")
+            .update({
+                cover_path: memory.file_path
+            })
+            .eq("id", albumId);
+
+    if (error) {
+
+        alert(error.message);
+
+        return;
+    }
+
+    closeCoverManager();
+
+    await loadAlbums();
+    await loadVideos();
+
+    alert(
+        "Folder cover updated ❤️"
+    );
+}
+
+
+async function removeAlbumCover(albumId) {
+
+    const { error } =
+        await supabaseClient
+            .from("albums")
+            .update({
+                cover_path: null
+            })
+            .eq("id", albumId);
+
+    if (error) {
+
+        alert(error.message);
+
+        return;
+    }
+
+    closeCoverManager();
+
+    await loadAlbums();
+    await loadVideos();
+
+    alert(
+        "Folder cover removed. The latest memory will be used instead."
+    );
+}
+
+
+function closeCoverManager() {
+
+    const modal =
+        document.getElementById("coverModal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+
+// ==========================================
 // DELETE ALBUM
 // ==========================================
 
@@ -876,26 +1222,78 @@ async function loadVideos() {
 
         folder.className = "folder";
 
-        const { data: coverVideos } =
-            await supabaseClient
-                .from("memories")
-                .select("file_path, title")
-                .eq("album_id", album.id)
-                .eq("media_type", "video")
-                .order("created_at", { ascending: false })
-                .limit(1);
-
         let videoUrl = "";
+        let coverType = "";
 
-        if (coverVideos && coverVideos.length > 0) {
+        // Use manually selected cover first
+        if (album.cover_path) {
 
             videoUrl =
-                await getSignedUrl(
-                    coverVideos[0].file_path
-                );
+                await getSignedUrl(album.cover_path);
+
+            const { data: selectedCover } =
+                await supabaseClient
+                    .from("memories")
+                    .select("media_type")
+                    .eq("file_path", album.cover_path)
+                    .maybeSingle();
+
+            if (selectedCover) {
+                coverType = selectedCover.media_type;
+            }
         }
 
-        if (videoUrl) {
+        // Fallback to newest video
+        if (!videoUrl) {
+
+            const { data: coverVideos } =
+                await supabaseClient
+                    .from("memories")
+                    .select("file_path, title, media_type")
+                    .eq("album_id", album.id)
+                    .eq("media_type", "video")
+                    .order("created_at", { ascending: false })
+                    .limit(1);
+
+            if (coverVideos && coverVideos.length > 0) {
+
+                videoUrl =
+                    await getSignedUrl(
+                        coverVideos[0].file_path
+                    );
+
+                coverType =
+                    coverVideos[0].media_type;
+            }
+        }
+
+        if (videoUrl && coverType === "photo") {
+
+            folder.innerHTML = `
+                <div style="
+                    width:100%;
+                    height:180px;
+                    border-radius:14px;
+                    overflow:hidden;
+                    margin-bottom:12px;
+                    background:#222;
+                ">
+
+                    <img
+                        src="${videoUrl}"
+                        alt="${escapeHtml(album.name)}"
+                        style="
+                            width:100%;
+                            height:100%;
+                            object-fit:cover;
+                            display:block;
+                        "
+                    >
+
+                </div>
+            `;
+
+        } else if (videoUrl) {
 
             folder.innerHTML = `
                 <div style="
@@ -959,6 +1357,10 @@ async function loadVideos() {
 
                 <button onclick="openVideoFolder('${album.id}')">
                     Open Videos
+                </button>
+
+                <button onclick="changeAlbumCover('${album.id}')">
+                    🖼️ Cover
                 </button>
 
                 <button onclick="renameAlbum('${album.id}')">
