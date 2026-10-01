@@ -425,12 +425,30 @@ async function createMemoryCard(memory) {
     if (memory.media_type === "photo") {
 
         media =
-            `<img src="${url}" alt="${escapeHtml(memory.title || "Photo")}">`;
+            `<img
+                src="${url}"
+                alt="${escapeHtml(memory.title || "Photo")}"
+                onclick="openMediaViewer('${url}','photo','${escapeHtml(memory.title || "Photo")}')"
+                style="
+                    cursor:pointer;
+                    width:100%;
+                    display:block;
+                "
+            >`;
 
     } else if (memory.media_type === "video") {
 
         media =
-            `<video controls preload="metadata">
+            `<video
+                controls
+                preload="metadata"
+                onclick="openMediaViewer('${url}','video','${escapeHtml(memory.title || "Video")}')"
+                style="
+                    cursor:pointer;
+                    width:100%;
+                    display:block;
+                "
+            >
                 <source src="${url}">
             </video>`;
 
@@ -462,9 +480,11 @@ async function createMemoryCard(memory) {
                        </audio>`
                     : ""
             }
+
             <button onclick="renameMemory('${memory.id}')">
-    ✏️ Rename
-</button>
+                ✏️ Rename
+            </button>
+
             <button
                 class="delete-button"
                 onclick="deleteMemory('${memory.id}','${escapeHtml(memory.file_path || "")}')"
@@ -477,8 +497,6 @@ async function createMemoryCard(memory) {
 
     return card;
 }
-
-
 // ==========================================
 // DELETE MEMORY
 // ==========================================
