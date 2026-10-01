@@ -2894,3 +2894,46 @@ async function toggleFavorite(memoryId, currentFavorite) {
             : "Added to Favorites ❤️"
     );
 }
+async function loadLoveHero() {
+
+    const hero =
+        document.getElementById("loveHero");
+
+    if (!hero) return;
+
+    const { data, error } =
+        await supabaseClient
+            .from("memories")
+            .select("*")
+            .eq("media_type", "photo")
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+    if (error) {
+        console.error("Unable to load hero photo:", error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    const photo = data[0];
+
+    const url =
+        await getSignedUrl(photo.file_path);
+
+    if (!url) return;
+
+    hero.style.backgroundImage =
+        `linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.88),
+            rgba(0, 0, 0, 0.45),
+            rgba(0, 0, 0, 0.18)
+        ),
+        url("${url}")`;
+
+    hero.style.backgroundSize = "cover";
+    hero.style.backgroundPosition = "center";
+}
