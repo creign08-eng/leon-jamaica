@@ -1,468 +1,475 @@
-/* =========================================================
-   LEON & MAJICA
-   PRIVATE MEMORY WEBSITE
-   ========================================================= */
+// ==========================================
+// LEON & MAJICA - APP
+// ==========================================
 
-
-/* ================= SUPABASE ================= */
-
-const SUPABASE_URL =
-    "https://cbxchhonkkrlwisjjonk.supabase.co";
+const SUPABASE_URL = "https://cbxchhonkkrlwisjjonk.supabase.co";
 
 const SUPABASE_KEY =
     "sb_publishable_U2CbY-32ZYfAtp7YRlokcQ_uK8bKsQ6";
 
-const supabaseClient =
-    supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
 
-/* ================= LOGIN ================= */
+// ==========================================
+// LOGIN
+// ==========================================
 
-const WEBSITE_USERNAME =
-    "leon&majica";
-
-const SUPABASE_EMAIL =
-    "creign_liu17@yahoo.com";
+const LOGIN_USERNAME = "leon&majica";
+const LOGIN_EMAIL = "creign_liu17@yahoo.com";
+const LOGIN_PASSWORD = "12082000";
 
 
 async function login() {
 
     const username =
-        document.getElementById("username").value.trim();
+        document.getElementById("loginUsername").value.trim();
 
     const password =
-        document.getElementById("password").value;
+        document.getElementById("loginPassword").value;
 
-    const message =
-        document.getElementById("loginMessage");
+    const error =
+        document.getElementById("loginError");
 
+    error.textContent = "";
 
-    if (username !== WEBSITE_USERNAME) {
-
-        message.textContent =
-            "Incorrect username or password.";
-
+    if (username !== LOGIN_USERNAME) {
+        error.textContent = "Incorrect username.";
         return;
     }
 
+    if (password !== LOGIN_PASSWORD) {
+        error.textContent = "Incorrect password.";
+        return;
+    }
 
-    message.textContent =
-        "Signing in...";
-
-
-    const { error } =
+    const { error: loginError } =
         await supabaseClient.auth.signInWithPassword({
-
-            email: SUPABASE_EMAIL,
-
-            password: password
-
+            email: LOGIN_EMAIL,
+            password: LOGIN_PASSWORD
         });
 
-
-    if (error) {
-
-        console.error(error);
-
-        message.textContent =
-            "Incorrect username or password.";
-
+    if (loginError) {
+        error.textContent = loginError.message;
         return;
     }
-
 
     showWebsite();
 }
 
 
-/* ================= LOGOUT ================= */
-
 async function logout() {
 
     await supabaseClient.auth.signOut();
 
-    location.reload();
+    document
+        .getElementById("website")
+        .classList.add("hidden");
+
+    document
+        .getElementById("loginPage")
+        .classList.remove("hidden");
 }
 
 
-/* ================= SHOW WEBSITE ================= */
+// ==========================================
+// STARTUP
+// ==========================================
 
-function showWebsite() {
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const {
+        data: { session }
+    } = await supabaseClient.auth.getSession();
+
+    if (session) {
+        showWebsite();
+    } else {
+        document
+            .getElementById("loginPage")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("website")
+            .classList.add("hidden");
+    }
+
+    restoreTheme();
+    loadBackground();
+});
+
+
+async function showWebsite() {
 
     document
         .getElementById("loginPage")
         .classList.add("hidden");
 
     document
-        .getElementById("mainPage")
+        .getElementById("website")
         .classList.remove("hidden");
 
-
-    loadEverything();
+    await loadEverything();
 }
 
 
-/* ================= CHECK LOGIN ================= */
+// ==========================================
+// NAVIGATION
+// ==========================================
 
-async function checkLogin() {
-
-    const { data } =
-        await supabaseClient.auth.getSession();
-
-
-    if (data.session) {
-
-        showWebsite();
-
-    }
-
-}
-
-
-checkLogin();
-
-
-/* ================= NAVIGATION ================= */
-
-function showSection(section) {
+function showSection(sectionId) {
 
     document
         .querySelectorAll(".section")
-        .forEach(element => {
-
-            element.classList.add("hidden");
-
+        .forEach(section => {
+            section.classList.add("hidden");
         });
 
+    const section =
+        document.getElementById(sectionId);
 
-    const selected =
-        document.getElementById(section);
-
-
-    if (selected) {
-
-        selected.classList.remove("hidden");
-
+    if (section) {
+        section.classList.remove("hidden");
     }
 
-
-    if (section === "albums") {
-
-        loadAlbums();
-
-    }
-
-
-    if (section === "playlists") {
-
-        loadPlaylists();
-
-    }
-
-
-    if (section === "videos") {
-
-        loadVideos();
-
-    }
-
-
-    if (section === "messages") {
-
-        loadMessages();
-
-    }
-
-
-    if (section === "home") {
-
+    if (sectionId === "homeSection") {
         loadRecentMemories();
-
     }
 
+    if (sectionId === "albumsSection") {
+        loadAlbums();
+    }
+
+    if (sectionId === "videosSection") {
+        loadVideos();
+    }
+
+    if (sectionId === "playlistsSection") {
+        loadPlaylists();
+    }
+
+    if (sectionId === "messagesSection") {
+        loadMessages();
+    }
+
+    if (sectionId === "uploadSection") {
+        loadAlbumOptions();
+        loadPlaylistOptions();
+    }
+
+    if (sectionId === "settingsSection") {
+        loadBackgroundPhotos();
+    }
 }
 
 
-/* ================= LOAD EVERYTHING ================= */
+// ==========================================
+// LOAD EVERYTHING
+// ==========================================
 
 async function loadEverything() {
 
     await loadRecentMemories();
-
     await loadAlbums();
-
-    await loadPlaylists();
-
     await loadVideos();
-
+    await loadPlaylists();
     await loadMessages();
 
+    await loadAlbumOptions();
+    await loadPlaylistOptions();
+    await loadBackgroundPhotos();
 }
 
 
-/* =========================================================
-   RECENT MEMORIES
-   ========================================================= */
+// ==========================================
+// SIGNED URL
+// ==========================================
+
+async function getSignedUrl(filePath) {
+
+    if (!filePath) return "";
+
+    const { data, error } =
+        await supabaseClient.storage
+            .from("memories")
+            .createSignedUrl(filePath, 3600);
+
+    if (error) {
+        console.error(error);
+        return "";
+    }
+
+    return data.signedUrl;
+}
+
+
+// ==========================================
+// RECENT MEMORIES
+// ==========================================
 
 async function loadRecentMemories() {
 
     const container =
         document.getElementById("recentMemories");
 
-
     if (!container) return;
 
-
-    container.innerHTML = "";
-
+    container.innerHTML = "Loading...";
 
     const { data, error } =
         await supabaseClient
             .from("memories")
             .select("*")
-            .order("created_at", {
-                ascending: false
-            })
+            .order("created_at", { ascending: false })
             .limit(12);
 
-
     if (error) {
-
         console.error(error);
-
+        container.innerHTML = "Unable to load memories.";
         return;
     }
 
+    container.innerHTML = "";
 
-    for (const memory of data) {
-
-        await createMemoryCard(
-            memory,
-            container
-        );
-
+    if (!data || data.length === 0) {
+        container.innerHTML =
+            "<p>No memories yet. Add your first memory ❤️</p>";
+        return;
     }
 
+    for (const memory of data) {
+        container.appendChild(
+            await createMemoryCard(memory)
+        );
+    }
 }
 
 
-/* =========================================================
-   LOAD ALBUMS
-   ========================================================= */
+// ==========================================
+// MEMORY CARD
+// ==========================================
+
+async function createMemoryCard(memory) {
+
+    const card =
+        document.createElement("div");
+
+    card.className = "card";
+
+    const url =
+        await getSignedUrl(memory.file_path);
+
+    let media = "";
+
+    if (memory.media_type === "photo") {
+
+        media =
+            `<img src="${url}" alt="${escapeHtml(memory.title || "Photo")}">`;
+
+    } else if (memory.media_type === "video") {
+
+        media =
+            `<video controls preload="metadata">
+                <source src="${url}">
+            </video>`;
+
+    } else if (memory.media_type === "music") {
+
+        media =
+            `<div style="padding:40px;text-align:center;font-size:45px">
+                🎵
+            </div>`;
+    }
+
+    card.innerHTML = `
+        ${media}
+
+        <div class="card-info">
+
+            <h3>
+                ${escapeHtml(memory.title || "Memory")}
+            </h3>
+
+            <p>
+                ${escapeHtml(memory.description || "")}
+            </p>
+
+            ${
+                memory.media_type === "music"
+                    ? `<audio controls style="width:100%">
+                        <source src="${url}">
+                       </audio>`
+                    : ""
+            }
+
+            <button
+                class="delete-button"
+                onclick="deleteMemory('${memory.id}','${escapeHtml(memory.file_path || "")}')"
+            >
+                Delete
+            </button>
+
+        </div>
+    `;
+
+    return card;
+}
+
+
+// ==========================================
+// DELETE MEMORY
+// ==========================================
+
+async function deleteMemory(id, filePath) {
+
+    if (!confirm("Delete this memory?")) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("memories")
+            .delete()
+            .eq("id", id);
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    if (filePath) {
+
+        await supabaseClient
+            .storage
+            .from("memories")
+            .remove([filePath]);
+    }
+
+    await loadEverything();
+}
+
+
+// ==========================================
+// ALBUMS
+// ==========================================
 
 async function loadAlbums() {
 
-    const container =
+    const gallery =
         document.getElementById("albumGallery");
 
+    if (!gallery) return;
 
-    if (!container) return;
-
-
-    container.innerHTML = "";
-
+    gallery.innerHTML = "Loading albums...";
 
     const { data, error } =
         await supabaseClient
             .from("albums")
             .select("*")
-            .order("created_at", {
-                ascending: false
-            });
-
+            .order("created_at", { ascending: false });
 
     if (error) {
-
         console.error(error);
-
+        gallery.innerHTML = "Unable to load albums.";
         return;
     }
 
+    gallery.innerHTML = "";
 
-    if (!data.length) {
+    if (!data || data.length === 0) {
 
-        container.innerHTML =
+        gallery.innerHTML =
             "<p>No albums yet. Create your first album ❤️</p>";
 
         return;
     }
 
-
     for (const album of data) {
 
-        const card =
+        const folder =
             document.createElement("div");
 
-        card.className =
-            "card";
+        folder.className = "folder";
 
+        folder.innerHTML = `
+            <div style="font-size:45px">
+                ${album.media_type === "video" ? "🎬" : "📸"}
+            </div>
 
-        const cover =
-            document.createElement("div");
+            <h3>${escapeHtml(album.name)}</h3>
 
-        cover.className =
-            "card-cover";
+            <p>${escapeHtml(album.description || "")}</p>
 
+            <button onclick="openAlbum('${album.id}')">
+                Open
+            </button>
+        `;
 
-        cover.style.display =
-            "flex";
-
-        cover.style.alignItems =
-            "center";
-
-        cover.style.justifyContent =
-            "center";
-
-        cover.style.fontSize =
-            "45px";
-
-        cover.textContent =
-            album.media_type === "video"
-                ? "🎥"
-                : "📸";
-
-
-        if (album.cover_path) {
-
-            const url =
-                await getFileUrl(
-                    album.cover_path
-                );
-
-
-            if (url) {
-
-                cover.style.backgroundImage =
-                    `url("${url}")`;
-
-                cover.style.backgroundSize =
-                    "cover";
-
-                cover.style.backgroundPosition =
-                    "center";
-
-                cover.textContent = "";
-
-            }
-
-        }
-
-
-        const content =
-            document.createElement("div");
-
-        content.className =
-            "card-content";
-
-
-        const title =
-            document.createElement("h3");
-
-        title.textContent =
-            album.name;
-
-
-        const description =
-            document.createElement("p");
-
-        description.textContent =
-            album.description ||
-            "Memory album";
-
-
-        content.appendChild(title);
-
-        content.appendChild(description);
-
-
-        card.appendChild(cover);
-
-        card.appendChild(content);
-
-
-        card.onclick =
-            () => openAlbum(album);
-
-
-        container.appendChild(card);
-
+        gallery.appendChild(folder);
     }
-
 }
 
 
-/* =========================================================
-   OPEN ALBUM
-   ========================================================= */
+async function openAlbum(albumId) {
 
-async function openAlbum(album) {
+    const viewer =
+        document.getElementById("albumViewer");
 
-    document
-        .getElementById("albumViewer")
-        .classList.remove("hidden");
+    const gallery =
+        document.getElementById("albumGallery");
 
+    const title =
+        document.getElementById("albumViewerTitle");
 
-    document
-        .getElementById("albumViewerTitle")
-        .textContent =
-        album.name;
+    const memoryGallery =
+        document.getElementById("albumMemoryGallery");
 
+    if (!viewer) return;
 
-    const container =
-        document.getElementById(
-            "albumMemoryGallery"
-        );
+    const { data: album } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .eq("id", albumId)
+            .single();
 
+    if (!album) return;
 
-    container.innerHTML =
-        "<p>Loading memories...</p>";
+    title.textContent = album.name;
 
+    gallery.classList.add("hidden");
+    viewer.classList.remove("hidden");
 
-    const { data, error } =
+    memoryGallery.innerHTML = "Loading...";
+
+    const { data: memories, error } =
         await supabaseClient
             .from("memories")
             .select("*")
-            .eq("album_id", album.id)
-            .order("created_at", {
-                ascending: false
-            });
-
+            .eq("album_id", albumId)
+            .order("created_at", { ascending: false });
 
     if (error) {
-
-        console.error(error);
-
-        container.innerHTML =
-            "<p>Could not load album.</p>";
-
+        memoryGallery.innerHTML =
+            "Unable to load this album.";
         return;
     }
 
+    memoryGallery.innerHTML = "";
 
-    container.innerHTML = "";
-
-
-    if (!data.length) {
-
-        container.innerHTML =
-            "<p>This album is empty.</p>";
-
+    if (!memories || memories.length === 0) {
+        memoryGallery.innerHTML =
+            "<p>This folder is empty.</p>";
         return;
     }
 
-
-    for (const memory of data) {
-
-        await createMemoryCard(
-            memory,
-            container
+    for (const memory of memories) {
+        memoryGallery.appendChild(
+            await createMemoryCard(memory)
         );
-
     }
-
 }
 
 
@@ -472,266 +479,153 @@ function closeAlbum() {
         .getElementById("albumViewer")
         .classList.add("hidden");
 
+    document
+        .getElementById("albumGallery")
+        .classList.remove("hidden");
 }
 
 
-/* =========================================================
-   ALBUM MANAGER
-   ========================================================= */
+// ==========================================
+// ALBUM MANAGER
+// ==========================================
 
-async function openAlbumManager() {
+function openAlbumManager(type = "photo") {
 
     document
-        .getElementById("albumManager")
+        .getElementById("albumModal")
         .classList.remove("hidden");
 
+    const typeSelect =
+        document.getElementById("newAlbumType");
 
-    await loadAlbumManager();
+    if (typeSelect) {
+        typeSelect.value = type;
+    }
 
+    loadAlbumManager();
 }
 
 
 function closeAlbumManager() {
 
     document
-        .getElementById("albumManager")
+        .getElementById("albumModal")
         .classList.add("hidden");
-
 }
 
-
-async function loadAlbumManager() {
-
-    const container =
-        document.getElementById(
-            "albumManagerList"
-        );
-
-
-    container.innerHTML =
-        "Loading albums...";
-
-
-    const { data, error } =
-        await supabaseClient
-            .from("albums")
-            .select("*")
-            .order("created_at", {
-                ascending: false
-            });
-
-
-    if (error) {
-
-        console.error(error);
-
-        container.innerHTML =
-            "Could not load albums.";
-
-        return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    for (const album of data) {
-
-        const row =
-            document.createElement("div");
-
-
-        row.style.display =
-            "flex";
-
-        row.style.gap =
-            "8px";
-
-        row.style.alignItems =
-            "center";
-
-        row.style.marginBottom =
-            "10px";
-
-
-        const input =
-            document.createElement("input");
-
-        input.value =
-            album.name;
-
-
-        const save =
-            document.createElement("button");
-
-        save.textContent =
-            "Save";
-
-
-        save.onclick =
-            async () => {
-
-                await renameAlbum(
-                    album.id,
-                    input.value
-                );
-
-            };
-
-
-        const remove =
-            document.createElement("button");
-
-        remove.textContent =
-            "Delete";
-
-
-        remove.onclick =
-            async () => {
-
-                await deleteAlbum(
-                    album.id
-                );
-
-            };
-
-
-        row.appendChild(input);
-
-        row.appendChild(save);
-
-        row.appendChild(remove);
-
-
-        container.appendChild(row);
-
-    }
-
-}
-
-
-/* =========================================================
-   CREATE ALBUM
-   ========================================================= */
 
 async function createAlbum() {
 
-    const input =
-        document.getElementById(
-            "newAlbumName"
-        );
-
-
     const name =
-        input.value.trim();
+        document
+            .getElementById("newAlbumName")
+            .value
+            .trim();
 
+    const mediaType =
+        document
+            .getElementById("newAlbumType")
+            .value;
 
     if (!name) {
-
-        alert("Please enter an album name.");
-
+        alert("Enter a folder name.");
         return;
     }
-
 
     const { error } =
         await supabaseClient
             .from("albums")
             .insert({
-
-                name: name,
-
-                description: "",
-
-                media_type: "photo"
-
+                name,
+                media_type: mediaType
             });
 
-
     if (error) {
-
-        console.error(error);
-
-        alert(
-            "Could not create album: " +
-            error.message
-        );
-
+        alert(error.message);
         return;
     }
 
-
-    input.value = "";
-
+    document
+        .getElementById("newAlbumName")
+        .value = "";
 
     await loadAlbumManager();
-
     await loadAlbums();
-
+    await loadVideos();
+    await loadAlbumOptions();
 }
 
 
-/* =========================================================
-   RENAME ALBUM
-   ========================================================= */
+async function loadAlbumManager() {
 
-async function renameAlbum(id, name) {
+    const list =
+        document.getElementById("albumManagerList");
 
-    name =
-        name.trim();
+    if (!list) return;
+
+    const { data } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+    list.innerHTML = "";
+
+    if (!data) return;
+
+    data.forEach(album => {
+
+        const row =
+            document.createElement("div");
+
+        row.style.padding = "10px 0";
+
+        row.innerHTML = `
+            <strong>${escapeHtml(album.name)}</strong>
+
+            <button onclick="renameAlbum('${album.id}')">
+                Rename
+            </button>
+
+            <button onclick="deleteAlbum('${album.id}')">
+                Delete
+            </button>
+        `;
+
+        list.appendChild(row);
+    });
+}
 
 
-    if (!name) {
+async function renameAlbum(id) {
 
-        alert("Album name cannot be empty.");
+    const name =
+        prompt("New folder name:");
 
-        return;
-    }
-
+    if (!name) return;
 
     const { error } =
         await supabaseClient
             .from("albums")
-            .update({
-                name: name
-            })
+            .update({ name })
             .eq("id", id);
 
-
     if (error) {
-
-        console.error(error);
-
-        alert(
-            "Could not rename album."
-        );
-
+        alert(error.message);
         return;
     }
 
-
     await loadAlbumManager();
-
     await loadAlbums();
-
+    await loadVideos();
 }
 
 
-/* =========================================================
-   DELETE ALBUM
-   ========================================================= */
-
 async function deleteAlbum(id) {
 
-    if (
-        !confirm(
-            "Delete this album?"
-        )
-    ) {
-
+    if (!confirm("Delete this folder? The memories inside will not be deleted.")) {
         return;
     }
-
 
     const { error } =
         await supabaseClient
@@ -739,588 +633,445 @@ async function deleteAlbum(id) {
             .delete()
             .eq("id", id);
 
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    await loadAlbumManager();
+    await loadAlbums();
+    await loadVideos();
+    await loadAlbumOptions();
+}
+
+
+// ==========================================
+// VIDEO FOLDERS
+// ==========================================
+
+async function loadVideos() {
+
+    const gallery =
+        document.getElementById("videoGallery");
+
+    if (!gallery) return;
+
+    gallery.innerHTML = "Loading video folders...";
+
+    const { data, error } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .eq("media_type", "video")
+            .order("created_at", { ascending: false });
 
     if (error) {
+        gallery.innerHTML = "Unable to load video folders.";
+        return;
+    }
 
-        console.error(error);
+    gallery.innerHTML = "";
 
-        alert(
-            "Could not delete album: " +
-            error.message
-        );
+    if (!data || data.length === 0) {
+
+        gallery.innerHTML =
+            "<p>No video folders yet.</p>";
 
         return;
     }
 
+    for (const album of data) {
 
-    await loadAlbumManager();
+        const folder =
+            document.createElement("div");
 
-    await loadAlbums();
+        folder.className = "folder";
 
+        folder.innerHTML = `
+            <div style="font-size:45px">🎬</div>
+
+            <h3>${escapeHtml(album.name)}</h3>
+
+            <button onclick="openVideoFolder('${album.id}')">
+                Open Videos
+            </button>
+        `;
+
+        gallery.appendChild(folder);
+    }
 }
 
 
-/* =========================================================
-   LOAD PLAYLISTS
-   ========================================================= */
+async function openVideoFolder(id) {
+
+    const { data: album } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+    if (!album) return;
+
+    const { data: memories } =
+        await supabaseClient
+            .from("memories")
+            .select("*")
+            .eq("album_id", id)
+            .eq("media_type", "video")
+            .order("created_at", { ascending: false });
+
+    const gallery =
+        document.getElementById("videoGallery");
+
+    gallery.innerHTML = `
+        <div style="grid-column:1/-1">
+            <button onclick="loadVideos()">← Back</button>
+            <h2>${escapeHtml(album.name)}</h2>
+        </div>
+    `;
+
+    if (!memories || memories.length === 0) {
+
+        gallery.innerHTML +=
+            "<p>This video folder is empty.</p>";
+
+        return;
+    }
+
+    for (const memory of memories) {
+
+        gallery.appendChild(
+            await createMemoryCard(memory)
+        );
+    }
+}
+
+
+function openVideoFolderManager() {
+
+    document
+        .getElementById("videoFolderModal")
+        .classList.remove("hidden");
+}
+
+
+function closeVideoFolderManager() {
+
+    document
+        .getElementById("videoFolderModal")
+        .classList.add("hidden");
+}
+
+
+async function createVideoFolder() {
+
+    const name =
+        document
+            .getElementById("newVideoFolderName")
+            .value
+            .trim();
+
+    if (!name) {
+        alert("Enter a folder name.");
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("albums")
+            .insert({
+                name,
+                media_type: "video"
+            });
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    document
+        .getElementById("newVideoFolderName")
+        .value = "";
+
+    closeVideoFolderManager();
+
+    await loadVideos();
+    await loadAlbums();
+    await loadAlbumOptions();
+}
+
+
+// ==========================================
+// PLAYLISTS
+// ==========================================
+
+let currentPlaylist = [];
+let currentSongIndex = 0;
+
 
 async function loadPlaylists() {
 
-    const container =
-        document.getElementById(
-            "playlistGallery"
-        );
+    const gallery =
+        document.getElementById("playlistGallery");
 
+    if (!gallery) return;
 
-    if (!container) return;
-
-
-    container.innerHTML = "";
-
+    gallery.innerHTML = "Loading playlists...";
 
     const { data, error } =
         await supabaseClient
             .from("playlists")
             .select("*")
-            .order("created_at", {
-                ascending: false
-            });
-
+            .order("created_at", { ascending: false });
 
     if (error) {
+        gallery.innerHTML = "Unable to load playlists.";
+        return;
+    }
 
-        console.error(error);
+    gallery.innerHTML = "";
+
+    if (!data || data.length === 0) {
+
+        gallery.innerHTML =
+            "<p>No playlists yet.</p>";
 
         return;
     }
 
+    data.forEach(playlist => {
 
-    if (!data.length) {
-
-        container.innerHTML =
-            "<p>No playlists yet. Create your first playlist 🎵</p>";
-
-        return;
-    }
-
-
-    for (const playlist of data) {
-
-        const card =
+        const folder =
             document.createElement("div");
 
-        card.className =
-            "card";
+        folder.className = "folder";
 
+        folder.innerHTML = `
+            <div style="font-size:45px">🎵</div>
 
-        const cover =
-            document.createElement("div");
+            <h3>${escapeHtml(playlist.name)}</h3>
 
-        cover.className =
-            "card-cover";
+            <button onclick="openPlaylist('${playlist.id}')">
+                Open Playlist
+            </button>
+        `;
 
-
-        cover.style.display =
-            "flex";
-
-        cover.style.alignItems =
-            "center";
-
-        cover.style.justifyContent =
-            "center";
-
-        cover.style.fontSize =
-            "45px";
-
-        cover.textContent =
-            "🎵";
-
-
-        if (playlist.cover_path) {
-
-            const url =
-                await getFileUrl(
-                    playlist.cover_path
-                );
-
-
-            if (url) {
-
-                cover.style.backgroundImage =
-                    `url("${url}")`;
-
-                cover.style.backgroundSize =
-                    "cover";
-
-                cover.style.backgroundPosition =
-                    "center";
-
-                cover.textContent = "";
-
-            }
-
-        }
-
-
-        const content =
-            document.createElement("div");
-
-        content.className =
-            "card-content";
-
-
-        const title =
-            document.createElement("h3");
-
-        title.textContent =
-            playlist.name;
-
-
-        const description =
-            document.createElement("p");
-
-        description.textContent =
-            playlist.description ||
-            "Music playlist";
-
-
-        content.appendChild(title);
-
-        content.appendChild(description);
-
-
-        card.appendChild(cover);
-
-        card.appendChild(content);
-
-
-        card.onclick =
-            () => openPlaylist(playlist);
-
-
-        container.appendChild(card);
-
-    }
-
+        gallery.appendChild(folder);
+    });
 }
 
 
-/* =========================================================
-   OPEN PLAYLIST
-   ========================================================= */
+async function openPlaylist(id) {
 
-async function openPlaylist(playlist) {
+    const { data: playlist } =
+        await supabaseClient
+            .from("playlists")
+            .select("*")
+            .eq("id", id)
+            .single();
 
-    document
-        .getElementById("playlistViewer")
-        .classList.remove("hidden");
+    if (!playlist) return;
 
-
-    document
-        .getElementById(
-            "playlistViewerTitle"
-        )
-        .textContent =
-        playlist.name;
-
-
-    const container =
-        document.getElementById(
-            "playlistSongs"
-        );
-
-
-    container.innerHTML =
-        "Loading songs...";
-
-
-    const { data, error } =
+    const { data: songs } =
         await supabaseClient
             .from("memories")
             .select("*")
-            .eq(
-                "playlist_id",
-                playlist.id
-            )
-            .eq(
-                "media_type",
-                "music"
-            )
-            .order("created_at", {
-                ascending: true
-            });
+            .eq("playlist_id", id)
+            .eq("media_type", "music")
+            .order("created_at", { ascending: true });
 
+    currentPlaylist = songs || [];
+    currentSongIndex = 0;
 
-    if (error) {
+    document
+        .getElementById("playlistGallery")
+        .classList.add("hidden");
 
-        console.error(error);
+    const viewer =
+        document.getElementById("playlistViewer");
 
-        container.innerHTML =
-            "Could not load playlist.";
+    viewer.classList.remove("hidden");
 
-        return;
-    }
+    document
+        .getElementById("playlistViewerTitle")
+        .textContent = playlist.name;
 
+    const songList =
+        document.getElementById("playlistSongs");
 
-    container.innerHTML = "";
+    songList.innerHTML = "";
 
+    if (!songs || songs.length === 0) {
 
-    if (!data.length) {
-
-        container.innerHTML =
+        songList.innerHTML =
             "<p>This playlist is empty.</p>";
 
         return;
     }
 
+    for (let i = 0; i < songs.length; i++) {
 
-    currentPlaylist =
-        data;
+        const song = songs[i];
 
-
-    for (
-        let i = 0;
-        i < data.length;
-        i++
-    ) {
-
-        const song =
-            data[i];
-
+        const url =
+            await getSignedUrl(song.file_path);
 
         const row =
             document.createElement("div");
 
-        row.className =
-            "song-item";
+        row.className = "card";
 
+        row.style.padding = "15px";
+        row.style.marginBottom = "10px";
 
-        const info =
-            document.createElement("div");
+        row.innerHTML = `
+            <strong>
+                ${escapeHtml(song.title || "Song")}
+            </strong>
 
-        info.className =
-            "song-info";
+            <button onclick="playSong(${i})">
+                ▶ Play
+            </button>
+        `;
 
-
-        const title =
-            document.createElement("h3");
-
-        title.textContent =
-            song.title;
-
-
-        const subtitle =
-            document.createElement("p");
-
-        subtitle.textContent =
-            "Leon & Majica";
-
-
-        info.appendChild(title);
-
-        info.appendChild(subtitle);
-
-
-        const play =
-            document.createElement("button");
-
-        play.textContent =
-            "▶";
-
-
-        play.onclick =
-            () => playSong(
-                song,
-                i
-            );
-
-
-        row.appendChild(info);
-
-        row.appendChild(play);
-
-
-        container.appendChild(row);
-
+        songList.appendChild(row);
     }
-
 }
 
 
 function closePlaylist() {
 
     document
-        .getElementById(
-            "playlistViewer"
-        )
+        .getElementById("playlistViewer")
         .classList.add("hidden");
 
+    document
+        .getElementById("playlistGallery")
+        .classList.remove("hidden");
 }
 
 
-/* =========================================================
-   PLAYLIST MANAGER
-   ========================================================= */
-
-async function openPlaylistManager() {
+function openPlaylistManager() {
 
     document
-        .getElementById(
-            "playlistManager"
-        )
+        .getElementById("playlistModal")
         .classList.remove("hidden");
 
-
-    await loadPlaylistManager();
-
+    loadPlaylistManager();
 }
 
 
 function closePlaylistManager() {
 
     document
-        .getElementById(
-            "playlistManager"
-        )
+        .getElementById("playlistModal")
         .classList.add("hidden");
+}
 
+
+async function createPlaylist() {
+
+    const name =
+        document
+            .getElementById("newPlaylistName")
+            .value
+            .trim();
+
+    if (!name) {
+        alert("Enter a playlist name.");
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("playlists")
+            .insert({ name });
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    document
+        .getElementById("newPlaylistName")
+        .value = "";
+
+    await loadPlaylistManager();
+    await loadPlaylists();
+    await loadPlaylistOptions();
 }
 
 
 async function loadPlaylistManager() {
 
-    const container =
-        document.getElementById(
-            "playlistManagerList"
-        );
+    const list =
+        document.getElementById("playlistManagerList");
 
+    if (!list) return;
 
-    container.innerHTML =
-        "Loading playlists...";
-
-
-    const { data, error } =
+    const { data } =
         await supabaseClient
             .from("playlists")
             .select("*")
-            .order("created_at", {
-                ascending: false
-            });
+            .order("created_at", { ascending: false });
 
+    list.innerHTML = "";
 
-    if (error) {
+    if (!data) return;
 
-        console.error(error);
-
-        container.innerHTML =
-            "Could not load playlists.";
-
-        return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    for (const playlist of data) {
+    data.forEach(playlist => {
 
         const row =
             document.createElement("div");
 
+        row.style.padding = "10px 0";
 
-        row.style.display =
-            "flex";
+        row.innerHTML = `
+            <strong>${escapeHtml(playlist.name)}</strong>
 
-        row.style.gap =
-            "8px";
+            <button onclick="renamePlaylist('${playlist.id}')">
+                Rename
+            </button>
 
-        row.style.alignItems =
-            "center";
+            <button onclick="deletePlaylist('${playlist.id}')">
+                Delete
+            </button>
+        `;
 
-        row.style.marginBottom =
-            "10px";
-
-
-        const input =
-            document.createElement("input");
-
-        input.value =
-            playlist.name;
-
-
-        const save =
-            document.createElement("button");
-
-        save.textContent =
-            "Save";
-
-
-        save.onclick =
-            async () => {
-
-                await renamePlaylist(
-                    playlist.id,
-                    input.value
-                );
-
-            };
-
-
-        const remove =
-            document.createElement("button");
-
-        remove.textContent =
-            "Delete";
-
-
-        remove.onclick =
-            async () => {
-
-                await deletePlaylist(
-                    playlist.id
-                );
-
-            };
-
-
-        row.appendChild(input);
-
-        row.appendChild(save);
-
-        row.appendChild(remove);
-
-
-        container.appendChild(row);
-
-    }
-
+        list.appendChild(row);
+    });
 }
 
 
-/* =========================================================
-   CREATE PLAYLIST
-   ========================================================= */
-
-async function createPlaylist() {
-
-    const input =
-        document.getElementById(
-            "newPlaylistName"
-        );
-
+async function renamePlaylist(id) {
 
     const name =
-        input.value.trim();
+        prompt("New playlist name:");
 
-
-    if (!name) {
-
-        alert(
-            "Please enter a playlist name."
-        );
-
-        return;
-    }
-
+    if (!name) return;
 
     const { error } =
         await supabaseClient
             .from("playlists")
-            .insert({
-
-                name: name,
-
-                description: ""
-
-            });
-
-
-    if (error) {
-
-        console.error(error);
-
-        alert(
-            "Could not create playlist: " +
-            error.message
-        );
-
-        return;
-    }
-
-
-    input.value = "";
-
-
-    await loadPlaylistManager();
-
-    await loadPlaylists();
-
-}
-
-
-/* =========================================================
-   RENAME PLAYLIST
-   ========================================================= */
-
-async function renamePlaylist(id, name) {
-
-    name =
-        name.trim();
-
-
-    if (!name) {
-
-        alert(
-            "Playlist name cannot be empty."
-        );
-
-        return;
-    }
-
-
-    const { error } =
-        await supabaseClient
-            .from("playlists")
-            .update({
-                name: name
-            })
+            .update({ name })
             .eq("id", id);
 
-
     if (error) {
-
-        console.error(error);
-
-        alert(
-            "Could not rename playlist."
-        );
-
+        alert(error.message);
         return;
     }
 
-
     await loadPlaylistManager();
-
     await loadPlaylists();
-
 }
 
-
-/* =========================================================
-   DELETE PLAYLIST
-   ========================================================= */
 
 async function deletePlaylist(id) {
 
-    if (
-        !confirm(
-            "Delete this playlist?"
-        )
-    ) {
-
+    if (!confirm("Delete this playlist? Songs will not be deleted.")) {
         return;
     }
-
 
     const { error } =
         await supabaseClient
@@ -1328,883 +1079,694 @@ async function deletePlaylist(id) {
             .delete()
             .eq("id", id);
 
-
     if (error) {
-
-        console.error(error);
-
-        alert(
-            "Could not delete playlist: " +
-            error.message
-        );
-
+        alert(error.message);
         return;
     }
-
 
     await loadPlaylistManager();
-
     await loadPlaylists();
-
+    await loadPlaylistOptions();
 }
 
 
-/* =========================================================
-   VIDEOS
-   ========================================================= */
+// ==========================================
+// MUSIC PLAYER
+// ==========================================
 
-async function loadVideos() {
+async function playSong(index) {
 
-    const container =
-        document.getElementById(
-            "videoGallery"
-        );
+    if (!currentPlaylist[index]) return;
 
+    currentSongIndex = index;
 
-    if (!container) return;
-
-
-    container.innerHTML = "";
-
-
-    const { data, error } =
-        await supabaseClient
-            .from("memories")
-            .select("*")
-            .eq(
-                "media_type",
-                "video"
-            )
-            .order("created_at", {
-                ascending: false
-            });
-
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-    }
-
-
-    for (const memory of data) {
-
-        await createMemoryCard(
-            memory,
-            container
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   MESSAGES
-   ========================================================= */
-
-async function loadMessages() {
-
-    const container =
-        document.getElementById(
-            "messageGallery"
-        );
-
-
-    if (!container) return;
-
-
-    container.innerHTML = "";
-
-
-    const { data, error } =
-        await supabaseClient
-            .from("memories")
-            .select("*")
-            .eq(
-                "media_type",
-                "message"
-            )
-            .order("created_at", {
-                ascending: false
-            });
-
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-    }
-
-
-    if (!data.length) {
-
-        container.innerHTML =
-            "<p>No messages yet. ❤️</p>";
-
-        return;
-    }
-
-
-    for (const memory of data) {
-
-        const card =
-            document.createElement(
-                "div"
-            );
-
-        card.className =
-            "message-card";
-
-
-        const title =
-            document.createElement("h3");
-
-        title.textContent =
-            memory.title;
-
-
-        const message =
-            document.createElement("p");
-
-        message.textContent =
-            memory.description || "";
-
-
-        const deleteButton =
-            createDeleteButton(
-                memory
-            );
-
-
-        card.appendChild(title);
-
-        card.appendChild(message);
-
-        card.appendChild(deleteButton);
-
-
-        container.appendChild(card);
-
-    }
-
-}
-
-
-/* =========================================================
-   CREATE MEMORY CARD
-   ========================================================= */
-
-async function createMemoryCard(
-    memory,
-    container
-) {
-
-    const card =
-        document.createElement(
-            "div"
-        );
-
-    card.className =
-        "memory-card";
-
+    const song =
+        currentPlaylist[index];
 
     const url =
-        await getFileUrl(
-            memory.file_path
-        );
-
-
-    if (
-        memory.media_type ===
-        "photo"
-    ) {
-
-        const image =
-            document.createElement(
-                "img"
-            );
-
-        image.src =
-            url;
-
-        image.alt =
-            memory.title;
-
-
-        card.appendChild(
-            image
-        );
-
-    }
-
-
-    if (
-        memory.media_type ===
-        "video"
-    ) {
-
-        const video =
-            document.createElement(
-                "video"
-            );
-
-        video.controls =
-            true;
-
-        video.src =
-            url;
-
-
-        card.appendChild(
-            video
-        );
-
-    }
-
-
-    if (
-        memory.media_type ===
-        "music"
-    ) {
-
-        const title =
-            document.createElement(
-                "h3"
-            );
-
-        title.textContent =
-            memory.title;
-
-
-        const audio =
-            document.createElement(
-                "audio"
-            );
-
-        audio.controls =
-            true;
-
-        audio.src =
-            url;
-
-        audio.style.width =
-            "100%";
-
-
-        card.appendChild(
-            title
-        );
-
-        card.appendChild(
-            audio
-        );
-
-    }
-
-
-    const deleteButton =
-        createDeleteButton(
-            memory
-        );
-
-
-    card.appendChild(
-        deleteButton
-    );
-
-
-    container.appendChild(
-        card
-    );
-
-}
-
-
-/* =========================================================
-   DELETE BUTTON
-   ========================================================= */
-
-function createDeleteButton(
-    memory
-) {
-
-    const button =
-        document.createElement(
-            "button"
-        );
-
-    button.textContent =
-        "🗑️ Delete";
-
-    button.className =
-        "delete-button";
-
-
-    button.onclick =
-        () => {
-
-            deleteMemory(
-                memory.id,
-                memory.file_path
-            );
-
-        };
-
-
-    return button;
-
-}
-
-
-/* =========================================================
-   DELETE MEMORY
-   ========================================================= */
-
-async function deleteMemory(
-    id,
-    filePath
-) {
-
-    if (
-        !confirm(
-            "Are you sure you want to delete this memory?"
-        )
-    ) {
-
-        return;
-    }
-
-
-    if (filePath) {
-
-        const { error } =
-            await supabaseClient
-                .storage
-                .from("memories")
-                .remove([
-                    filePath
-                ]);
-
-
-        if (error) {
-
-            console.error(error);
-
-            alert(
-                "Could not delete the file: " +
-                error.message
-            );
-
-            return;
-        }
-
-    }
-
-
-    const { error } =
-        await supabaseClient
-            .from("memories")
-            .delete()
-            .eq("id", id);
-
-
-    if (error) {
-
-        console.error(error);
-
-        alert(
-            "Could not delete memory: " +
-            error.message
-        );
-
-        return;
-    }
-
-
-    await loadEverything();
-
-}
-
-
-/* =========================================================
-   UPLOAD
-   ========================================================= */
-
-async function uploadMemories() {
-
-    const type =
-        document.getElementById(
-            "memoryType"
-        ).value;
-
-
-    const files =
-        document.getElementById(
-            "memoryFiles"
-        ).files;
-
-
-    const status =
-        document.getElementById(
-            "uploadStatus"
-        );
-
-
-    if (!files.length) {
-
-        status.textContent =
-            "Please choose a file first.";
-
-        return;
-    }
-
-
-    status.textContent =
-        "Uploading...";
-
-
-    for (
-        const file of files
-    ) {
-
-        const uniqueName =
-            crypto.randomUUID() +
-            "-" +
-            file.name;
-
-
-        const folder =
-            type === "music"
-                ? "musics"
-                : `${type}s`;
-
-
-        const filePath =
-            `${folder}/${uniqueName}`;
-
-
-        const {
-            error: uploadError
-        } =
-            await supabaseClient
-                .storage
-                .from("memories")
-                .upload(
-                    filePath,
-                    file,
-                    {
-                        upsert: false
-                    }
-                );
-
-
-        if (uploadError) {
-
-            console.error(
-                uploadError
-            );
-
-            status.textContent =
-                "Upload failed: " +
-                uploadError.message;
-
-            continue;
-        }
-
-
-        const {
-            error: databaseError
-        } =
-            await supabaseClient
-                .from("memories")
-                .insert({
-
-                    title:
-                        file.name,
-
-                    description:
-                        "",
-
-                    media_type:
-                        type,
-
-                    file_path:
-                        filePath
-
-                });
-
-
-        if (databaseError) {
-
-            console.error(
-                databaseError
-            );
-
-
-            await supabaseClient
-                .storage
-                .from("memories")
-                .remove([
-                    filePath
-                ]);
-
-
-            status.textContent =
-                "Could not save memory.";
-
-            continue;
-        }
-
-
-        status.textContent =
-            `${file.name} uploaded successfully.`;
-
-    }
-
-
-    document.getElementById(
-        "memoryFiles"
-    ).value = "";
-
-
-    await loadEverything();
-
-}
-
-
-/* =========================================================
-   MUSIC PLAYER
-   ========================================================= */
-
-let currentPlaylist = [];
-
-let currentSongIndex = 0;
-
-
-async function playSong(
-    song,
-    index
-) {
-
-    currentSongIndex =
-        index;
-
+        await getSignedUrl(song.file_path);
 
     const player =
-        document.getElementById(
-            "audioPlayer"
-        );
+        document.getElementById("audioPlayer");
 
-
-    const url =
-        await getFileUrl(
-            song.file_path
-        );
-
-
-    if (!url) {
-
-        alert(
-            "Could not load this song."
-        );
-
-        return;
-    }
-
-
-    player.src =
-        url;
-
-
-    player.volume =
-        document.getElementById(
-            "volumeControl"
-        ).value;
-
-
-    document.getElementById(
-        "playerTitle"
-    ).textContent =
-        song.title;
-
-
-    document.getElementById(
-        "playerArtist"
-    ).textContent =
-        "Leon & Majica";
-
+    player.src = url;
 
     document
-        .getElementById(
-            "musicPlayer"
-        )
-        .classList.remove(
-            "hidden"
-        );
+        .getElementById("playerSongTitle")
+        .textContent =
+        song.title || "Song";
 
+    document
+        .getElementById("musicPlayer")
+        .classList.remove("hidden");
 
     await player.play();
 
-
-    document.getElementById(
-        "playButton"
-    ).textContent =
-        "⏸";
-
+    document
+        .getElementById("playPauseButton")
+        .textContent = "⏸";
 }
 
 
 function toggleMusic() {
 
     const player =
-        document.getElementById(
-            "audioPlayer"
-        );
+        document.getElementById("audioPlayer");
 
-
-    if (
-        player.paused
-    ) {
+    if (player.paused) {
 
         player.play();
 
-        document.getElementById(
-            "playButton"
-        ).textContent =
-            "⏸";
+        document
+            .getElementById("playPauseButton")
+            .textContent = "⏸";
 
     } else {
 
         player.pause();
 
-        document.getElementById(
-            "playButton"
-        ).textContent =
-            "▶";
-
+        document
+            .getElementById("playPauseButton")
+            .textContent = "▶";
     }
-
 }
 
 
 function previousSong() {
 
-    if (
-        !currentPlaylist.length
-    ) return;
-
+    if (!currentPlaylist.length) return;
 
     currentSongIndex--;
 
-
-    if (
-        currentSongIndex < 0
-    ) {
-
+    if (currentSongIndex < 0) {
         currentSongIndex =
             currentPlaylist.length - 1;
-
     }
 
-
-    playSong(
-        currentPlaylist[
-            currentSongIndex
-        ],
-        currentSongIndex
-    );
-
+    playSong(currentSongIndex);
 }
 
 
 function nextSong() {
 
-    if (
-        !currentPlaylist.length
-    ) return;
-
+    if (!currentPlaylist.length) return;
 
     currentSongIndex++;
 
-
-    if (
-        currentSongIndex >=
-        currentPlaylist.length
-    ) {
-
+    if (currentSongIndex >= currentPlaylist.length) {
         currentSongIndex = 0;
-
     }
 
+    playSong(currentSongIndex);
+}
 
-    playSong(
-        currentPlaylist[
-            currentSongIndex
-        ],
-        currentSongIndex
+
+function changeVolume(value) {
+
+    document
+        .getElementById("audioPlayer")
+        .volume = Number(value);
+}
+
+
+document
+    .getElementById("audioPlayer")
+    ?.addEventListener("ended", nextSong);
+
+
+// ==========================================
+// UPLOAD
+// ==========================================
+
+async function uploadMemories() {
+
+    const files =
+        document.getElementById("memoryFiles").files;
+
+    const type =
+        document.getElementById("memoryType").value;
+
+    const title =
+        document.getElementById("memoryTitle").value.trim();
+
+    const description =
+        document
+            .getElementById("memoryDescription")
+            .value
+            .trim();
+
+    const albumId =
+        document.getElementById("memoryAlbum").value;
+
+    const playlistId =
+        document.getElementById("memoryPlaylist").value;
+
+    const status =
+        document.getElementById("uploadStatus");
+
+    if (!files.length) {
+
+        status.textContent =
+            "Please choose a file.";
+
+        return;
+    }
+
+    status.textContent = "Uploading...";
+
+    for (const file of files) {
+
+        const safeName =
+            file.name
+                .replace(/[^a-zA-Z0-9._-]/g, "_");
+
+        const path =
+            `${crypto.randomUUID()}-${safeName}`;
+
+        const { error: uploadError } =
+            await supabaseClient
+                .storage
+                .from("memories")
+                .upload(path, file);
+
+        if (uploadError) {
+
+            console.error(uploadError);
+
+            status.textContent =
+                uploadError.message;
+
+            return;
+        }
+
+        const { error: insertError } =
+            await supabaseClient
+                .from("memories")
+                .insert({
+                    title:
+                        title || file.name,
+
+                    description,
+
+                    media_type: type,
+
+                    file_path: path,
+
+                    album_id:
+                        albumId || null,
+
+                    playlist_id:
+                        type === "music"
+                            ? (playlistId || null)
+                            : null
+                });
+
+        if (insertError) {
+
+            console.error(insertError);
+
+            status.textContent =
+                insertError.message;
+
+            return;
+        }
+    }
+
+    status.textContent =
+        "Upload complete ❤️";
+
+    document
+        .getElementById("memoryFiles")
+        .value = "";
+
+    await loadEverything();
+}
+
+
+// ==========================================
+// ALBUM / PLAYLIST OPTIONS
+// ==========================================
+
+async function loadAlbumOptions() {
+
+    const select =
+        document.getElementById("memoryAlbum");
+
+    if (!select) return;
+
+    const { data } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .order("name");
+
+    select.innerHTML =
+        `<option value="">No folder</option>`;
+
+    if (!data) return;
+
+    data.forEach(album => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = album.id;
+        option.textContent =
+            `${album.media_type === "video" ? "🎬" : "📸"} ${album.name}`;
+
+        select.appendChild(option);
+    });
+}
+
+
+async function loadPlaylistOptions() {
+
+    const select =
+        document.getElementById("memoryPlaylist");
+
+    if (!select) return;
+
+    const { data } =
+        await supabaseClient
+            .from("playlists")
+            .select("*")
+            .order("name");
+
+    select.innerHTML =
+        `<option value="">No playlist</option>`;
+
+    if (!data) return;
+
+    data.forEach(playlist => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = playlist.id;
+        option.textContent =
+            `🎵 ${playlist.name}`;
+
+        select.appendChild(option);
+    });
+}
+
+
+// ==========================================
+// MESSAGES
+// ==========================================
+
+async function loadMessages() {
+
+    const gallery =
+        document.getElementById("messageGallery");
+
+    if (!gallery) return;
+
+    gallery.innerHTML = "Loading messages...";
+
+    const { data, error } =
+        await supabaseClient
+            .from("messages")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+    if (error) {
+
+        console.error(error);
+
+        gallery.innerHTML =
+            "Unable to load messages.";
+
+        return;
+    }
+
+    gallery.innerHTML = "";
+
+    if (!data || data.length === 0) {
+
+        gallery.innerHTML =
+            "<p>No messages yet. Add your first message ❤️</p>";
+
+        return;
+    }
+
+    data.forEach(message => {
+
+        const card =
+            document.createElement("div");
+
+        card.className = "message-card";
+
+        card.innerHTML = `
+            <h3>
+                ${escapeHtml(message.title)}
+            </h3>
+
+            <p>
+                ${escapeHtml(message.content)}
+            </p>
+
+            <button
+                onclick="editMessage('${message.id}')"
+            >
+                Edit
+            </button>
+
+            <button
+                class="delete-button"
+                onclick="deleteMessage('${message.id}')"
+            >
+                Delete
+            </button>
+        `;
+
+        gallery.appendChild(card);
+    });
+}
+
+
+function openMessageManager() {
+
+    document
+        .getElementById("messageModal")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("messageModalTitle")
+        .textContent =
+        "Add Message 💌";
+
+    document
+        .getElementById("messageId")
+        .value = "";
+
+    document
+        .getElementById("messageTitle")
+        .value = "";
+
+    document
+        .getElementById("messageContent")
+        .value = "";
+}
+
+
+function closeMessageManager() {
+
+    document
+        .getElementById("messageModal")
+        .classList.add("hidden");
+}
+
+
+async function saveMessage() {
+
+    const id =
+        document
+            .getElementById("messageId")
+            .value;
+
+    const title =
+        document
+            .getElementById("messageTitle")
+            .value
+            .trim();
+
+    const content =
+        document
+            .getElementById("messageContent")
+            .value
+            .trim();
+
+    if (!title || !content) {
+
+        alert("Please enter a title and message.");
+
+        return;
+    }
+
+    let error;
+
+    if (id) {
+
+        const result =
+            await supabaseClient
+                .from("messages")
+                .update({
+                    title,
+                    content
+                })
+                .eq("id", id);
+
+        error = result.error;
+
+    } else {
+
+        const result =
+            await supabaseClient
+                .from("messages")
+                .insert({
+                    title,
+                    content
+                });
+
+        error = result.error;
+    }
+
+    if (error) {
+
+        alert(error.message);
+
+        return;
+    }
+
+    closeMessageManager();
+
+    await loadMessages();
+}
+
+
+async function editMessage(id) {
+
+    const { data, error } =
+        await supabaseClient
+            .from("messages")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+    if (error || !data) {
+
+        alert("Unable to open message.");
+
+        return;
+    }
+
+    document
+        .getElementById("messageModal")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("messageModalTitle")
+        .textContent =
+        "Edit Message 💌";
+
+    document
+        .getElementById("messageId")
+        .value =
+        data.id;
+
+    document
+        .getElementById("messageTitle")
+        .value =
+        data.title;
+
+    document
+        .getElementById("messageContent")
+        .value =
+        data.content;
+}
+
+
+async function deleteMessage(id) {
+
+    if (!confirm("Delete this message?")) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("messages")
+            .delete()
+            .eq("id", id);
+
+    if (error) {
+
+        alert(error.message);
+
+        return;
+    }
+
+    await loadMessages();
+}
+
+
+// ==========================================
+// BACKGROUND PHOTOS
+// ==========================================
+
+async function loadBackgroundPhotos() {
+
+    const select =
+        document.getElementById("backgroundPhoto");
+
+    if (!select) return;
+
+    const { data } =
+        await supabaseClient
+            .from("memories")
+            .select("*")
+            .eq("media_type", "photo")
+            .order("created_at", { ascending: false });
+
+    select.innerHTML =
+        `<option value="">Default background</option>`;
+
+    if (!data) return;
+
+    for (const photo of data) {
+
+        const option =
+            document.createElement("option");
+
+        option.value = photo.file_path;
+
+        option.textContent =
+            photo.title || "Photo";
+
+        select.appendChild(option);
+    }
+}
+
+
+async function setBackgroundPhoto() {
+
+    const path =
+        document
+            .getElementById("backgroundPhoto")
+            .value;
+
+    if (!path) {
+
+        removeBackgroundPhoto();
+
+        return;
+    }
+
+    const url =
+        await getSignedUrl(path);
+
+    if (!url) return;
+
+    document.body.style.backgroundImage =
+        `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),url("${url}")`;
+
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+
+    localStorage.setItem(
+        "leonMajicaBackground",
+        path
     );
-
 }
 
 
-function changeVolume() {
+async function loadBackground() {
 
-    const player =
-        document.getElementById(
-            "audioPlayer"
+    const path =
+        localStorage.getItem(
+            "leonMajicaBackground"
         );
 
+    if (!path) return;
 
-    const volume =
-        document.getElementById(
-            "volumeControl"
-        ).value;
+    const url =
+        await getSignedUrl(path);
 
+    if (!url) return;
 
-    player.volume =
-        volume;
+    document.body.style.backgroundImage =
+        `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),url("${url}")`;
 
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
 }
 
 
-function toggleMute() {
+function removeBackgroundPhoto() {
 
-    const player =
-        document.getElementById(
-            "audioPlayer"
-        );
+    document.body.style.backgroundImage = "";
 
-
-    player.muted =
-        !player.muted;
-
+    localStorage.removeItem(
+        "leonMajicaBackground"
+    );
 }
 
 
-/* Automatically play next song */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        const player =
-            document.getElementById(
-                "audioPlayer"
-            );
-
-
-        if (!player) return;
-
-
-        player.addEventListener(
-            "ended",
-            () => {
-
-                nextSong();
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   THEME
-   ========================================================= */
+// ==========================================
+// THEMES
+// ==========================================
 
 function setTheme(theme) {
 
-    document.body.dataset.theme =
-        theme;
+    document.body.classList.remove(
+        "romantic",
+        "light"
+    );
 
+    if (theme === "romantic") {
+        document.body.classList.add("romantic");
+    }
+
+    if (theme === "light") {
+        document.body.classList.add("light");
+    }
 
     localStorage.setItem(
         "leonMajicaTheme",
         theme
     );
-
-
-    if (
-        theme === "romantic"
-    ) {
-
-        document.documentElement.style.setProperty(
-            "--accent",
-            "#ff4d6d"
-        );
-
-        document.documentElement.style.setProperty(
-            "--accent-soft",
-            "#ff8fa3"
-        );
-
-    }
-
-
-    if (
-        theme === "dark"
-    ) {
-
-        document.documentElement.style.setProperty(
-            "--accent",
-            "#e50914"
-        );
-
-        document.documentElement.style.setProperty(
-            "--accent-soft",
-            "#ff4d6d"
-        );
-
-    }
-
-
-    if (
-        theme === "light"
-    ) {
-
-        document.documentElement.style.setProperty(
-            "--accent",
-            "#c9184a"
-        );
-
-        document.documentElement.style.setProperty(
-            "--accent-soft",
-            "#ff4d6d"
-        );
-
-        document.body.style.background =
-            "#f5f5f5";
-
-        document.body.style.color =
-            "#111";
-
-    } else {
-
-        document.body.style.background = "";
-
-        document.body.style.color = "";
-
-    }
-
 }
 
 
-/* Restore saved theme */
+function restoreTheme() {
 
-const savedTheme =
-    localStorage.getItem(
-        "leonMajicaTheme"
-    );
+    const theme =
+        localStorage.getItem(
+            "leonMajicaTheme"
+        );
+
+    if (theme) {
+        setTheme(theme);
+    }
+}
 
 
-if (savedTheme) {
+// ==========================================
+// SECURITY / HTML ESCAPE
+// ==========================================
 
-    setTheme(
-        savedTheme
-    );
+function escapeHtml(value) {
 
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
