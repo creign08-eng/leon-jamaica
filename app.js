@@ -4201,3 +4201,70 @@ async function addMemoryToPlaylist(memoryId) {
         `Added to "${playlist.name}" ❤️`
     );
 }
+async function addMemoryToAlbum(memoryId) {
+
+    const { data: albums, error } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .order("created_at", {
+                ascending: true
+            });
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    if (!albums || albums.length === 0) {
+        alert("You don't have any albums yet. Create an album first.");
+        return;
+    }
+
+    const choice =
+        prompt(
+            "Enter the number of the album:\n\n" +
+            albums
+                .map(
+                    (album, index) =>
+                        `${index + 1}. ${album.name}`
+                )
+                .join("\n")
+        );
+
+    if (!choice) {
+        return;
+    }
+
+    const index =
+        parseInt(choice, 10) - 1;
+
+    if (
+        isNaN(index) ||
+        index < 0 ||
+        index >= albums.length
+    ) {
+        alert("Invalid album number.");
+        return;
+    }
+
+    const album =
+        albums[index];
+
+    const { error: updateError } =
+        await supabaseClient
+            .from("memories")
+            .update({
+                album_id: album.id
+            })
+            .eq("id", memoryId);
+
+    if (updateError) {
+        alert(updateError.message);
+        return;
+    }
+
+    alert(
+        `Added to "${album.name}" ❤️`
+    );
+}
