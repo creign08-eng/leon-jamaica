@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Leon & Majica ❤️</title>
+    <title>Leon & Jamaica ❤️</title>
 
     <link rel="stylesheet" href="style.css">
 
@@ -24,18 +24,18 @@
         <p>Our Private Memories</p>
 
         <input
-    type="text"
-    id="username"
-    placeholder="Username"
-    autocomplete="username"
->
+            type="text"
+            id="username"
+            placeholder="Username"
+            autocomplete="username"
+        >
 
-<input
-    type="password"
-    id="password"
-    placeholder="Password"
-    autocomplete="current-password"
->
+        <input
+            type="password"
+            id="password"
+            placeholder="Password"
+            autocomplete="current-password"
+        >
 
         <button onclick="login()">
             Enter Our Memories
@@ -81,6 +81,10 @@
             💌 Messages
         </button>
 
+        <button onclick="showSection('upload')">
+            ➕ Add Memory
+        </button>
+
     </nav>
 
 
@@ -118,6 +122,66 @@
             <h2>💌 Our Messages</h2>
 
             <div id="messageGallery"></div>
+
+        </section>
+
+
+        <!-- UPLOAD SECTION -->
+
+        <section id="upload" class="section hidden">
+
+            <h2>➕ Add a Memory</h2>
+
+            <p>Save a new photo, video, or song to our memories.</p>
+
+            <div class="upload-box">
+
+                <label for="memoryType">
+                    What are you uploading?
+                </label>
+
+                <select id="memoryType">
+
+                    <option value="photo">
+                        📸 Photo
+                    </option>
+
+                    <option value="video">
+                        🎥 Video
+                    </option>
+
+                    <option value="music">
+                        🎵 Music
+                    </option>
+
+                </select>
+
+
+                <label for="memoryFiles">
+                    Choose file(s)
+                </label>
+
+                <input
+                    type="file"
+                    id="memoryFiles"
+                    multiple
+                    accept="image/*,video/*,audio/*"
+                >
+
+
+                <button
+                    type="button"
+                    onclick="uploadMemories()"
+                    id="uploadButton"
+                >
+                    ❤️ Upload Memory
+                </button>
+
+                <p id="uploadStatus"></p>
+
+                <div id="uploadProgress"></div>
+
+            </div>
 
         </section>
 
