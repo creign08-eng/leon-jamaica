@@ -486,7 +486,19 @@ async function createMemoryCard(memory) {
                     `
                     : ""
             }
-
+            
+${
+    memory.media_type === "photo" ||
+    memory.media_type === "video"
+        ? `
+            <button
+                onclick="addMemoryToAlbum('${memory.id}')"
+            >
+                📁 Add to Album
+            </button>
+          `
+        : ""
+}
             <button
                 onclick="renameMemory('${memory.id}')"
             >
