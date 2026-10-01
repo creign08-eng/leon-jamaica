@@ -2816,6 +2816,9 @@ async function loadFavorites() {
     const container =
         document.getElementById("favoritesGallery");
 
+    const count =
+        document.getElementById("favoritesCount");
+
     if (!container) return;
 
     container.innerHTML = "Loading favorites...";
@@ -2828,17 +2831,35 @@ async function loadFavorites() {
             .order("created_at", { ascending: false });
 
     if (error) {
+
         console.error(error);
+
         container.innerHTML =
             "Unable to load favorites.";
+
+        if (count) {
+            count.textContent =
+                "Unable to load favorites";
+        }
+
         return;
     }
 
     container.innerHTML = "";
 
+    const totalFavorites =
+        data ? data.length : 0;
+
+    if (count) {
+        count.textContent =
+            `${totalFavorites} favorite ${totalFavorites === 1 ? "memory" : "memories"} ❤️`;
+    }
+
     if (!data || data.length === 0) {
+
         container.innerHTML =
             "<p>No favorite memories yet ❤️</p>";
+
         return;
     }
 
