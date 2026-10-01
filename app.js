@@ -233,7 +233,6 @@ async function showWebsite() {
 // ==========================================
 
 function showSection(sectionId) {
-function showSection(sectionId) {
 
     document
         .querySelectorAll(".section")
