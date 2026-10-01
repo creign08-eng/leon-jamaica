@@ -2010,14 +2010,6 @@ async function toggleFavorite(memoryId, currentFavorite) {
     );
 }
 
-    hero.style.backgroundPosition =
-        "center";
-
-    hero.style.backgroundRepeat =
-        "no-repeat";
-
-    console.log("Hero background loaded successfully.");
-}
 async function loadLoveHero() {
 
     const hero =
