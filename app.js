@@ -2896,7 +2896,7 @@ async function toggleFavorite(memoryId, currentFavorite) {
     );
 }
 async function loadLoveHero() {
-    alert("HERO FUNCTION IS RUNNING");
+    
     console.log("HERO STEP 1: FUNCTION RUNNING");
 
     const hero =
