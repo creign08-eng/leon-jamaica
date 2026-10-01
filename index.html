@@ -981,7 +981,51 @@
 
 <script src="app.js"></script>
 
+<!-- HERO BACKGROUND SELECTOR -->
 
+<div
+    id="heroBackgroundModal"
+    class="modal hidden"
+>
+
+    <div class="modal-box hero-background-modal">
+
+        <div class="hero-background-header">
+
+            <div>
+                <p class="hero-background-label">
+                    HOME SETTINGS
+                </p>
+
+                <h2>
+                    Choose Hero Background 🖼️
+                </h2>
+
+                <p>
+                    Select one of your photos for the
+                    Home page background.
+                </p>
+            </div>
+
+            <button
+                onclick="closeHeroBackgroundManager()"
+                class="hero-background-close"
+            >
+                ✕
+            </button>
+
+        </div>
+
+        <div
+            id="heroBackgroundGallery"
+            class="hero-background-gallery"
+        >
+            Loading photos...
+        </div>
+
+    </div>
+
+</div>
 
 <!-- FULLSCREEN MEDIA VIEWER -->
 
