@@ -1063,3 +1063,43 @@ body.light .brand {
         border-radius: 10px;
     }
 }
+/* SMALLER HERO BACKGROUND THUMBNAILS */
+
+.hero-background-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.hero-background-item {
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+}
+
+.hero-background-name {
+    left: 8px;
+    right: 8px;
+    bottom: 7px;
+    font-size: 11px;
+}
+
+.hero-background-selected {
+    top: 6px;
+    right: 6px;
+    padding: 4px 6px;
+    font-size: 10px;
+}
+
+@media (max-width: 600px) {
+    .hero-background-gallery {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+    }
+
+    .hero-background-item {
+        aspect-ratio: 1 / 1;
+    }
+
+    .hero-background-name {
+        font-size: 10px;
+    }
+}
