@@ -3794,83 +3794,188 @@ document.addEventListener(
    ========================================= */
 
 async function openHeroBackgroundManager() {
+async function openHeroBackgroundManager() {
 
-    const { data, error } =
-        await supabaseClient
-            .from("memories")
-            .select("id,title,file_path,created_at")
-            .eq("media_type", "photo")
-            .order("created_at", {
+    const modal =
+        document.getElementById(
+            "heroBackgroundModal"
+        );
+
+    const gallery =
+        document.getElementById(
+            "heroBackgroundGallery"
+        );
+
+    if (!modal || !gallery) {
+        return;
+    }
+
+    modal.classList.remove("hidden");
+
+    gallery.innerHTML =
+        "Loading photos...";
+
+    const {
+        data: photos,
+        error
+    } = await supabaseClient
+        .from("memories")
+        .select(
+            "id,title,file_path,created_at"
+        )
+        .eq(
+            "media_type",
+            "photo"
+        )
+        .order(
+            "created_at",
+            {
                 ascending: false
-            });
+            }
+        );
+
+    if (error) {
+
+        console.error(
+            "Hero gallery error:",
+            error
+        );
+
+        gallery.innerHTML =
+            "Unable to load photos.";
+
+        return;
+    }
+
+    if (
+        !photos ||
+        photos.length === 0
+    ) {
+
+        gallery.innerHTML =
+            "No photos available.";
+
+        return;
+    }
+
+    const {
+        data: settings
+    } = await supabaseClient
+        .from("site_settings")
+        .select("hero_path")
+        .eq("id", 1)
+        .single();
+
+    const currentHero =
+        settings?.hero_path || null;
+
+    gallery.innerHTML = "";
+
+    for (const photo of photos) {
+
+        const url =
+            await getSignedUrl(
+                photo.file_path
+            );
+
+        if (!url) {
+            continue;
+        }
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "hero-background-item";
+
+        if (
+            photo.file_path ===
+            currentHero
+        ) {
+
+            item.classList.add(
+                "selected"
+            );
+        }
+
+        const image =
+            document.createElement("img");
+
+        image.src = url;
+
+        image.alt =
+            photo.title ||
+            "Memory";
+
+        const name =
+            document.createElement("div");
+
+        name.className =
+            "hero-background-name";
+
+        name.textContent =
+            photo.title ||
+            "Untitled";
+
+        item.appendChild(image);
+        item.appendChild(name);
+
+        if (
+            photo.file_path ===
+            currentHero
+        ) {
+
+            const selected =
+                document.createElement(
+                    "div"
+                );
+
+            selected.className =
+                "hero-background-selected";
+
+            selected.textContent =
+                "✓ Selected";
+
+            item.appendChild(
+                selected
+            );
+        }
+
+        item.addEventListener(
+            "click",
+            async function () {
+
+                await setHeroBackground(
+                    photo.file_path
+                );
+
+            }
+        );
+
+        gallery.appendChild(item);
+    }
+}
+
+async function setHeroBackground(
+    filePath
+) {
+
+    const {
+        error
+    } = await supabaseClient
+        .from("site_settings")
+        .update({
+            hero_path: filePath,
+            updated_at:
+                new Date().toISOString()
+        })
+        .eq("id", 1);
 
     if (error) {
 
         alert(
-            "Unable to load photos: " +
+            "Unable to save background: " +
             error.message
-        );
-
-        return;
-    }
-
-    if (!data || data.length === 0) {
-
-        alert(
-            "You don't have any photos yet."
-        );
-
-        return;
-    }
-
-    let message =
-        "Choose a photo for the Home background:\n\n";
-
-    data.forEach((photo, index) => {
-
-        message +=
-            `${index + 1}. ${photo.title || "Untitled"}\n`;
-
-    });
-
-    const choice =
-        prompt(message);
-
-    if (choice === null) {
-        return;
-    }
-
-    const number =
-        parseInt(choice, 10);
-
-    if (
-        isNaN(number) ||
-        number < 1 ||
-        number > data.length
-    ) {
-
-        alert("Please enter a valid number.");
-
-        return;
-    }
-
-    const selectedPhoto =
-        data[number - 1];
-
-    const { error: updateError } =
-        await supabaseClient
-            .from("site_settings")
-            .update({
-                hero_path: selectedPhoto.file_path,
-                updated_at: new Date().toISOString()
-            })
-            .eq("id", 1);
-
-    if (updateError) {
-
-        alert(
-            "Unable to save hero background: " +
-            updateError.message
         );
 
         return;
@@ -3878,12 +3983,25 @@ async function openHeroBackgroundManager() {
 
     await loadLoveHero();
 
+    closeHeroBackgroundManager();
+
     alert(
-        "Home background changed successfully ❤️"
+        "Home background changed ❤️"
     );
 }
 
 
+function closeHeroBackgroundManager() {
+
+    const modal =
+        document.getElementById(
+            "heroBackgroundModal"
+        );
+
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
 async function resetHeroBackground() {
 
     const { error } =
