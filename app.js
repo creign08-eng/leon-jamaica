@@ -2896,6 +2896,7 @@ async function toggleFavorite(memoryId, currentFavorite) {
     );
 }
 async function loadLoveHero() {
+    alert("HERO FUNCTION IS RUNNING");
 
     const hero =
         document.getElementById("loveHero");
