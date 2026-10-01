@@ -11,11 +11,12 @@ const supabaseClient =
     );
 
 
-/* WEBSITE LOGIN */
+/* LOGIN SETTINGS */
 
 const WEBSITE_USERNAME = "leon&majica";
 
-const SUPABASE_EMAIL = "creign_liu17@yahoo.com";
+const SUPABASE_EMAIL =
+    "creign_liu17@yahoo.com";
 
 
 /* LOGIN */
@@ -44,7 +45,7 @@ async function login() {
     message.textContent = "Signing in...";
 
 
-    const { data, error } =
+    const { error } =
         await supabaseClient.auth.signInWithPassword({
 
             email: SUPABASE_EMAIL,
@@ -58,8 +59,6 @@ async function login() {
 
         message.textContent =
             "Incorrect username or password.";
-
-        console.error(error);
 
         return;
     }
@@ -134,29 +133,24 @@ function showSection(section) {
 }
 
 
-/* =========================
-   UPLOAD MEMORIES
-========================= */
+/* UPLOAD MEMORIES */
 
 async function uploadMemories() {
-
-    const fileInput =
-        document.getElementById("memoryFiles");
 
     const type =
         document.getElementById("memoryType").value;
 
+    const files =
+        document.getElementById("memoryFiles").files;
+
     const status =
         document.getElementById("uploadStatus");
 
-    const button =
-        document.getElementById("uploadButton");
+    const progress =
+        document.getElementById("uploadProgress");
 
 
-    const files = fileInput.files;
-
-
-    if (!files || files.length === 0) {
+    if (!files.length) {
 
         status.textContent =
             "Please choose a file first.";
@@ -165,139 +159,96 @@ async function uploadMemories() {
     }
 
 
-    button.disabled = true;
-
     status.textContent =
-        "Uploading your memories...";
+        "Uploading...";
+
+    progress.textContent = "";
 
 
-    let successful = 0;
+    for (const file of files) {
+
+        const uniqueName =
+            crypto.randomUUID() + "-" + file.name;
+
+        const filePath =
+            `${type}s/${uniqueName}`;
 
 
-    try {
+        /* UPLOAD FILE */
 
-        for (const file of files) {
+        const { error: uploadError } =
+            await supabaseClient
+                .storage
+                .from("memories")
+                .upload(
+                    filePath,
+                    file,
+                    {
+                        upsert: false
+                    }
+                );
+
+
+        if (uploadError) {
+
+            console.error(uploadError);
 
             status.textContent =
-                `Uploading ${file.name}...`;
+                "Upload failed: " +
+                uploadError.message;
+
+            continue;
+        }
 
 
-            /*
-            Create a unique filename so files
-            with the same name don't overwrite
-            each other.
-            */
+        /* SAVE FILE INFORMATION */
 
-            const extension =
-                file.name.includes(".")
-                    ? file.name.split(".").pop()
-                    : "";
+        const { error: databaseError } =
+            await supabaseClient
+                .from("memories")
+                .insert({
 
-            const uniqueName =
-                `${crypto.randomUUID()}${extension ? "." + extension : ""}`;
+                    title: file.name,
 
+                    description: "",
 
-            const filePath =
-                `${type}s/${uniqueName}`;
+                    media_type: type,
 
+                    file_path: filePath
 
-            /*
-            Upload file to Supabase Storage
-            */
-
-            const { error: uploadError } =
-                await supabaseClient
-                    .storage
-                    .from("memories")
-                    .upload(
-                        filePath,
-                        file,
-                        {
-                            cacheControl: "3600",
-                            upsert: false
-                        }
-                    );
+                });
 
 
-            if (uploadError) {
+        if (databaseError) {
 
-                console.error(uploadError);
+            console.error(databaseError);
 
-                status.textContent =
-                    `Could not upload ${file.name}`;
+            await supabaseClient
+                .storage
+                .from("memories")
+                .remove([filePath]);
 
-                continue;
-            }
+            status.textContent =
+                "File uploaded but could not be saved.";
 
-
-            /*
-            Save information about the file
-            in the memories database table.
-            */
-
-            const { error: databaseError } =
-                await supabaseClient
-                    .from("memories")
-                    .insert({
-
-                        title: file.name,
-
-                        description: "",
-
-                        media_type: type,
-
-                        file_path: filePath
-
-                    });
-
-
-            if (databaseError) {
-
-                console.error(databaseError);
-
-                status.textContent =
-                    `File uploaded, but information could not be saved: ${file.name}`;
-
-                continue;
-            }
-
-
-            successful++;
-
+            continue;
         }
 
 
         status.textContent =
-            `❤️ ${successful} memory${successful === 1 ? "" : "ies"} uploaded successfully!`;
-
-
-        fileInput.value = "";
-
-
-        /*
-        Refresh all galleries
-        */
-
-        await loadMemories();
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        status.textContent =
-            "Something went wrong while uploading.";
-
+            `${file.name} uploaded successfully.`;
     }
 
 
-    button.disabled = false;
+    document.getElementById("memoryFiles").value = "";
+
+    progress.textContent = "";
+
+    await loadMemories();
 }
 
 
-/* =========================
-   LOAD MEMORIES
-========================= */
+/* LOAD MEMORIES */
 
 async function loadMemories() {
 
@@ -351,23 +302,31 @@ async function loadMemories() {
                 await getFileUrl(memory.file_path);
 
 
-            photos.innerHTML += `
+            const card =
+                document.createElement("div");
 
-                <div class="memory-card">
+            card.className =
+                "memory-card";
 
-                    <img
-                        src="${url}"
-                        alt="${escapeHTML(memory.title || "Memory")}"
-                        loading="lazy"
-                    >
 
-                    <p>
-                        ${escapeHTML(memory.title || "")}
-                    </p>
+            const image =
+                document.createElement("img");
 
-                </div>
+            image.src = url;
 
-            `;
+            image.alt =
+                memory.title;
+
+
+            const deleteButton =
+                createDeleteButton(memory);
+
+
+            card.appendChild(image);
+
+            card.appendChild(deleteButton);
+
+            photos.appendChild(card);
         }
 
 
@@ -379,23 +338,39 @@ async function loadMemories() {
                 await getFileUrl(memory.file_path);
 
 
-            videos.innerHTML += `
+            const card =
+                document.createElement("div");
 
-                <div class="video-card">
+            card.className =
+                "memory-card";
 
-                    <h3>
-                        ${escapeHTML(memory.title || "Video")}
-                    </h3>
 
-                    <video
-                        controls
-                        playsinline
-                        src="${url}">
-                    </video>
+            const title =
+                document.createElement("h3");
 
-                </div>
+            title.textContent =
+                memory.title;
 
-            `;
+
+            const video =
+                document.createElement("video");
+
+            video.controls = true;
+
+            video.src = url;
+
+
+            const deleteButton =
+                createDeleteButton(memory);
+
+
+            card.appendChild(title);
+
+            card.appendChild(video);
+
+            card.appendChild(deleteButton);
+
+            videos.appendChild(card);
         }
 
 
@@ -407,22 +382,39 @@ async function loadMemories() {
                 await getFileUrl(memory.file_path);
 
 
-            music.innerHTML += `
+            const card =
+                document.createElement("div");
 
-                <div class="music-card">
+            card.className =
+                "memory-card";
 
-                    <h3>
-                        🎵 ${escapeHTML(memory.title || "Music")}
-                    </h3>
 
-                    <audio
-                        controls
-                        src="${url}">
-                    </audio>
+            const title =
+                document.createElement("h3");
 
-                </div>
+            title.textContent =
+                memory.title;
 
-            `;
+
+            const audio =
+                document.createElement("audio");
+
+            audio.controls = true;
+
+            audio.src = url;
+
+
+            const deleteButton =
+                createDeleteButton(memory);
+
+
+            card.appendChild(title);
+
+            card.appendChild(audio);
+
+            card.appendChild(deleteButton);
+
+            music.appendChild(card);
         }
 
 
@@ -430,21 +422,38 @@ async function loadMemories() {
 
         if (memory.media_type === "message") {
 
-            messages.innerHTML += `
+            const card =
+                document.createElement("div");
 
-                <div class="message-card">
+            card.className =
+                "message-card";
 
-                    <h3>
-                        ${escapeHTML(memory.title || "Message")}
-                    </h3>
 
-                    <p>
-                        ${escapeHTML(memory.description || "")}
-                    </p>
+            const title =
+                document.createElement("h3");
 
-                </div>
+            title.textContent =
+                memory.title;
 
-            `;
+
+            const description =
+                document.createElement("p");
+
+            description.textContent =
+                memory.description || "";
+
+
+            const deleteButton =
+                createDeleteButton(memory);
+
+
+            card.appendChild(title);
+
+            card.appendChild(description);
+
+            card.appendChild(deleteButton);
+
+            messages.appendChild(card);
         }
 
     }
@@ -452,9 +461,99 @@ async function loadMemories() {
 }
 
 
-/* =========================
-   GET PRIVATE FILE URL
-========================= */
+/* DELETE BUTTON */
+
+function createDeleteButton(memory) {
+
+    const button =
+        document.createElement("button");
+
+    button.textContent =
+        "🗑️ Delete";
+
+    button.className =
+        "delete-button";
+
+
+    button.onclick = function () {
+
+        deleteMemory(
+            memory.id,
+            memory.file_path
+        );
+
+    };
+
+
+    return button;
+}
+
+
+/* DELETE MEMORY */
+
+async function deleteMemory(id, filePath) {
+
+    const confirmDelete =
+        confirm(
+            "Are you sure you want to delete this memory?"
+        );
+
+
+    if (!confirmDelete) {
+
+        return;
+    }
+
+
+    /* DELETE FILE */
+
+    const { error: storageError } =
+        await supabaseClient
+            .storage
+            .from("memories")
+            .remove([filePath]);
+
+
+    if (storageError) {
+
+        console.error(storageError);
+
+        alert(
+            "Could not delete the file: " +
+            storageError.message
+        );
+
+        return;
+    }
+
+
+    /* DELETE DATABASE RECORD */
+
+    const { error: databaseError } =
+        await supabaseClient
+            .from("memories")
+            .delete()
+            .eq("id", id);
+
+
+    if (databaseError) {
+
+        console.error(databaseError);
+
+        alert(
+            "File deleted, but database record could not be deleted."
+        );
+
+        return;
+    }
+
+
+    await loadMemories();
+
+}
+
+
+/* PRIVATE FILE URL */
 
 async function getFileUrl(path) {
 
@@ -473,26 +572,8 @@ async function getFileUrl(path) {
         console.error(error);
 
         return "";
-
     }
 
 
     return data.signedUrl;
-
-}
-
-
-/* =========================
-   PROTECT DISPLAYED TEXT
-========================= */
-
-function escapeHTML(value) {
-
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
+            }
