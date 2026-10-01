@@ -335,7 +335,77 @@
             id="playlistsSection"
             class="section hidden"
         >
+            
+<!-- LEON & MAJICA MUSIC PLAYER -->
 
+<div id="spotifyPlayer" class="spotify-player">
+
+    <div class="spotify-artwork" id="spotifyArtwork">
+        <span>🎵</span>
+    </div>
+
+    <div class="spotify-details">
+        <p class="spotify-label">NOW PLAYING</p>
+
+        <h2 id="spotifySongTitle">
+            Choose a song ❤️
+        </h2>
+
+        <p id="spotifySongSubtitle">
+            Leon & Majica Playlist
+        </p>
+
+        <audio
+            id="spotifyAudio"
+            preload="metadata"
+        ></audio>
+
+        <input
+            id="spotifyProgress"
+            class="spotify-progress"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            aria-label="Song progress"
+        />
+
+        <div class="spotify-time">
+            <span id="spotifyCurrentTime">0:00</span>
+            <span id="spotifyDuration">0:00</span>
+        </div>
+
+        <div class="spotify-controls">
+
+            <button
+                type="button"
+                id="spotifyPrevious"
+                aria-label="Previous song"
+            >
+                ⏮
+            </button>
+
+            <button
+                type="button"
+                id="spotifyPlayPause"
+                class="spotify-play-button"
+                aria-label="Play"
+            >
+                ▶
+            </button>
+
+            <button
+                type="button"
+                id="spotifyNext"
+                aria-label="Next song"
+            >
+                ⏭
+            </button>
+
+        </div>
+    </div>
+
+</div>
             <div class="section-title">
 
                 <div>
