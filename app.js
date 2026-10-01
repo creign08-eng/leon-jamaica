@@ -2709,3 +2709,60 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+function openMediaViewer(url, type, title = "") {
+
+    const viewer =
+        document.getElementById("mediaViewer");
+
+    const content =
+        document.getElementById("mediaViewerContent");
+
+    if (!viewer || !content) {
+        return;
+    }
+
+    content.innerHTML = "";
+
+    if (type === "video") {
+
+        const video =
+            document.createElement("video");
+
+        video.src = url;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+
+        content.appendChild(video);
+
+    } else {
+
+        const image =
+            document.createElement("img");
+
+        image.src = url;
+        image.alt = title || "Memory";
+
+        content.appendChild(image);
+    }
+
+    viewer.classList.remove("hidden");
+}
+
+
+function closeMediaViewer() {
+
+    const viewer =
+        document.getElementById("mediaViewer");
+
+    const content =
+        document.getElementById("mediaViewerContent");
+
+    if (content) {
+        content.innerHTML = "";
+    }
+
+    if (viewer) {
+        viewer.classList.add("hidden");
+    }
+}
