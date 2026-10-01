@@ -4147,22 +4147,16 @@ async function addMemoryToPlaylist(memoryId) {
         return;
     }
 
-    const options = playlists
-        .map(
-            playlist =>
-                `${playlist.id}|${playlist.name}`
-        )
-        .join("\n");
-
     const choice =
         prompt(
-            "Enter the number of the playlist:\n\n" +
+            "🎵 Choose a playlist:\n\n" +
             playlists
                 .map(
                     (playlist, index) =>
                         `${index + 1}. ${playlist.name}`
                 )
-                .join("\n")
+                .join("\n") +
+            "\n\nEnter the playlist number:"
         );
 
     if (!choice) {
@@ -4198,7 +4192,7 @@ async function addMemoryToPlaylist(memoryId) {
     }
 
     alert(
-        `Added to "${playlist.name}" ❤️`
+        `🎵 Added to "${playlist.name}"`
     );
 }
 async function addMemoryToAlbum(memoryId) {
