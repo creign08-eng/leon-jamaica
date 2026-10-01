@@ -411,6 +411,7 @@ async function renameMemory(memoryId) {
 // ==========================================
 
 async function createMemoryCard(memory) {
+async function createMemoryCard(memory) {
 
     const card =
         document.createElement("div");
@@ -460,6 +461,9 @@ async function createMemoryCard(memory) {
             </div>`;
     }
 
+    const favoriteIcon =
+        memory.is_favorite ? "❤️" : "🤍";
+
     card.innerHTML = `
         ${media}
 
@@ -480,6 +484,12 @@ async function createMemoryCard(memory) {
                        </audio>`
                     : ""
             }
+
+            <button
+                onclick="toggleFavorite('${memory.id}', ${memory.is_favorite ? "true" : "false"})"
+            >
+                ${favoriteIcon} Favorite
+            </button>
 
             <button onclick="renameMemory('${memory.id}')">
                 ✏️ Rename
