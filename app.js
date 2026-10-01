@@ -358,7 +358,53 @@ async function loadRecentMemories() {
         );
     }
 }
+async function renameMemory(memoryId) {
 
+    const { data: memory, error: fetchError } =
+        await supabaseClient
+            .from("memories")
+            .select("id,title")
+            .eq("id", memoryId)
+            .single();
+
+    if (fetchError || !memory) {
+        alert("Unable to find this file.");
+        return;
+    }
+
+    const newName = prompt(
+        "Enter a new name:",
+        memory.title || "Untitled"
+    );
+
+    if (newName === null) {
+        return;
+    }
+
+    const trimmedName = newName.trim();
+
+    if (!trimmedName) {
+        alert("Please enter a name.");
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("memories")
+            .update({
+                title: trimmedName
+            })
+            .eq("id", memoryId);
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    await loadEverything();
+
+    alert("File renamed successfully ❤️");
+}
 
 // ==========================================
 // MEMORY CARD
