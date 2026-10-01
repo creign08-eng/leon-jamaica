@@ -2,7 +2,7 @@ const SUPABASE_URL =
     "https://cbxchhonkkrlwisjjonk.supabase.co";
 
 const SUPABASE_KEY =
-    "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+    "sb_publishable_U2CbY-32ZYfAtp7YRlokcQ_uK8bKsQ6";
 
 
 const supabaseClient =
@@ -23,7 +23,7 @@ Put the EMAIL ADDRESS you used when
 you created the Supabase user here.
 */
 
-const SUPABASE_EMAIL = "YOUR-SUPABASE-EMAIL-HERE";
+const SUPABASE_EMAIL = "creign_liu17@yahoo.com";
 
 
 /* LOGIN */
