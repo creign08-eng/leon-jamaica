@@ -12,13 +12,26 @@ const supabaseClient =
     );
 
 
+/* YOUR LOGIN USERNAME */
+
+const WEBSITE_USERNAME = "leon&majica";
+
+
+/*
+IMPORTANT:
+Put the EMAIL ADDRESS you used when
+you created the Supabase user here.
+*/
+
+const SUPABASE_EMAIL = "YOUR-SUPABASE-EMAIL-HERE";
+
 
 /* LOGIN */
 
 async function login() {
 
-    const email =
-        document.getElementById("email").value;
+    const username =
+        document.getElementById("username").value.trim();
 
     const password =
         document.getElementById("password").value;
@@ -27,20 +40,32 @@ async function login() {
         document.getElementById("loginMessage");
 
 
+    if (username !== WEBSITE_USERNAME) {
+
+        message.textContent =
+            "Incorrect username or password.";
+
+        return;
+    }
+
+
     message.textContent = "Signing in...";
 
 
     const { data, error } =
         await supabaseClient.auth.signInWithPassword({
-            email,
-            password
+
+            email: SUPABASE_EMAIL,
+
+            password: password
+
         });
 
 
     if (error) {
 
         message.textContent =
-            "Incorrect email or password.";
+            "Incorrect username or password.";
 
         return;
     }
@@ -48,7 +73,6 @@ async function login() {
 
     showWebsite();
 }
-
 
 
 /* LOGOUT */
@@ -59,7 +83,6 @@ async function logout() {
 
     location.reload();
 }
-
 
 
 /* SHOW WEBSITE */
@@ -76,7 +99,6 @@ function showWebsite() {
 
     loadMemories();
 }
-
 
 
 /* CHECK LOGIN */
@@ -99,7 +121,6 @@ async function checkLogin() {
 checkLogin();
 
 
-
 /* NAVIGATION */
 
 function showSection(section) {
@@ -117,7 +138,6 @@ function showSection(section) {
         .getElementById(section)
         .classList.remove("hidden");
 }
-
 
 
 /* LOAD MEMORIES */
@@ -165,6 +185,7 @@ async function loadMemories() {
 
     for (const memory of data) {
 
+
         if (memory.media_type === "photo") {
 
             const url =
@@ -172,10 +193,12 @@ async function loadMemories() {
 
 
             photos.innerHTML += `
+
                 <img
                     src="${url}"
                     alt="${memory.title}"
                 >
+
             `;
         }
 
@@ -187,6 +210,7 @@ async function loadMemories() {
 
 
             videos.innerHTML += `
+
                 <div class="video-card">
 
                     <h3>${memory.title}</h3>
@@ -197,6 +221,7 @@ async function loadMemories() {
                     </video>
 
                 </div>
+
             `;
         }
 
@@ -208,6 +233,7 @@ async function loadMemories() {
 
 
             music.innerHTML += `
+
                 <div class="music-card">
 
                     <h3>${memory.title}</h3>
@@ -218,6 +244,7 @@ async function loadMemories() {
                     </audio>
 
                 </div>
+
             `;
         }
 
@@ -225,6 +252,7 @@ async function loadMemories() {
         if (memory.media_type === "message") {
 
             messages.innerHTML += `
+
                 <div class="message-card">
 
                     <h3>${memory.title}</h3>
@@ -232,13 +260,13 @@ async function loadMemories() {
                     <p>${memory.description || ""}</p>
 
                 </div>
+
             `;
         }
 
     }
 
 }
-
 
 
 /* PRIVATE FILE URL */
@@ -249,7 +277,10 @@ async function getFileUrl(path) {
         await supabaseClient
             .storage
             .from("memories")
-            .createSignedUrl(path, 3600);
+            .createSignedUrl(
+                path,
+                3600
+            );
 
 
     if (error) {
@@ -257,8 +288,10 @@ async function getFileUrl(path) {
         console.error(error);
 
         return "";
+
     }
 
 
     return data.signedUrl;
-      }
+
+}
