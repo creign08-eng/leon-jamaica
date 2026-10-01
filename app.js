@@ -2801,20 +2801,3 @@ document.getElementById("mediaViewer")?.addEventListener("click", function (even
     }
 
 });
-async function toggleFavorite(memoryId, currentFavorite) {
-
-    const { error } =
-        await supabaseClient
-            .from("memories")
-            .update({
-                is_favorite: !currentFavorite
-            })
-            .eq("id", memoryId);
-
-    if (error) {
-        alert(error.message);
-        return;
-    }
-
-    await loadEverything();
-}
