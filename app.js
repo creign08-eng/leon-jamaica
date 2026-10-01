@@ -481,6 +481,10 @@ async function loadAlbums() {
                     ✏️ Rename
                 </button>
 
+                <button onclick="editAlbumDescription('${album.id}')">
+                    📝 Description
+                </button>
+
                 <button
                     class="delete-button"
                     onclick="deleteAlbum('${album.id}')"
@@ -674,6 +678,10 @@ async function loadAlbumManager() {
                 Rename
             </button>
 
+            <button onclick="editAlbumDescription('${album.id}')">
+                Description
+            </button>
+
             <button onclick="deleteAlbum('${album.id}')">
                 Delete
             </button>
@@ -684,22 +692,34 @@ async function loadAlbumManager() {
 }
 
 
+// ==========================================
+// RENAME ALBUM
+// ==========================================
+
 async function renameAlbum(id) {
 
     const name =
         prompt("Enter the new folder name:");
 
-    if (!name) return;
+    if (name === null) return;
 
-    const cleanName = name.trim();
+    const trimmedName =
+        name.trim();
 
-    if (!cleanName) return;
+    if (!trimmedName) {
+
+        alert(
+            "Folder name cannot be empty."
+        );
+
+        return;
+    }
 
     const { error } =
         await supabaseClient
             .from("albums")
             .update({
-                name: cleanName
+                name: trimmedName
             })
             .eq("id", id);
 
@@ -708,20 +728,82 @@ async function renameAlbum(id) {
         return;
     }
 
+    await loadAlbumManager();
     await loadAlbums();
     await loadVideos();
-    await loadAlbumManager();
+    await loadAlbumOptions();
 }
 
 
-async function deleteAlbum(id) {
+// ==========================================
+// EDIT ALBUM DESCRIPTION
+// ==========================================
 
-    const confirmed =
-        confirm(
-            "Delete this folder?\n\nThe photos/videos inside the folder will NOT be deleted."
+async function editAlbumDescription(id) {
+
+    const { data: album, error: loadError } =
+        await supabaseClient
+            .from("albums")
+            .select("*")
+            .eq("id", id)
+            .single();
+
+    if (loadError || !album) {
+
+        alert(
+            "Unable to open folder."
         );
 
-    if (!confirmed) return;
+        return;
+    }
+
+    const currentDescription =
+        album.description || "";
+
+    const description =
+        prompt(
+            "Enter a description for this folder:",
+            currentDescription
+        );
+
+    if (description === null) return;
+
+    const { error } =
+        await supabaseClient
+            .from("albums")
+            .update({
+                description: description.trim()
+            })
+            .eq("id", id);
+
+    if (error) {
+
+        alert(error.message);
+
+        return;
+    }
+
+    await loadAlbumManager();
+    await loadAlbums();
+    await loadVideos();
+
+    alert(
+        "Folder description updated ❤️"
+    );
+}
+
+
+// ==========================================
+// DELETE ALBUM
+// ==========================================
+
+async function deleteAlbum(id) {
+
+    if (!confirm(
+        "Delete this folder?\n\nThe folder will be deleted, but the photos/videos inside it will NOT be deleted."
+    )) {
+        return;
+    }
 
     const { error } =
         await supabaseClient
@@ -730,16 +812,21 @@ async function deleteAlbum(id) {
             .eq("id", id);
 
     if (error) {
+
         alert(error.message);
+
         return;
     }
 
-    alert("Folder deleted successfully.");
-
+    await loadAlbumManager();
     await loadAlbums();
     await loadVideos();
-    await loadAlbumManager();
     await loadAlbumOptions();
+    await loadRecentMemories();
+
+    alert(
+        "Folder deleted successfully."
+    );
 }
 
 
@@ -765,8 +852,10 @@ async function loadVideos() {
             .order("created_at", { ascending: false });
 
     if (error) {
+
         gallery.innerHTML =
             "Unable to load video folders.";
+
         return;
     }
 
@@ -876,9 +965,13 @@ async function loadVideos() {
                     ✏️ Rename
                 </button>
 
+                <button onclick="editAlbumDescription('${album.id}')">
+                    📝 Description
+                </button>
+
                 <button
                     class="delete-button"
-                    onclick="deleteVideoFolder('${album.id}')"
+                    onclick="deleteAlbum('${album.id}')"
                 >
                     🗑️ Delete
                 </button>
@@ -915,6 +1008,7 @@ async function openVideoFolder(id) {
 
     gallery.innerHTML = `
         <div style="grid-column:1/-1">
+
             <button onclick="loadVideos()">
                 ← Back
             </button>
@@ -922,6 +1016,13 @@ async function openVideoFolder(id) {
             <h2>
                 ${escapeHtml(album.name)}
             </h2>
+
+            ${
+                album.description
+                    ? `<p>${escapeHtml(album.description)}</p>`
+                    : ""
+            }
+
         </div>
     `;
 
@@ -967,7 +1068,11 @@ async function createVideoFolder() {
             .trim();
 
     if (!name) {
-        alert("Enter a folder name.");
+
+        alert(
+            "Enter a folder name."
+        );
+
         return;
     }
 
@@ -980,7 +1085,9 @@ async function createVideoFolder() {
             });
 
     if (error) {
+
         alert(error.message);
+
         return;
     }
 
@@ -1021,8 +1128,10 @@ async function loadPlaylists() {
             .order("created_at", { ascending: false });
 
     if (error) {
+
         gallery.innerHTML =
             "Unable to load playlists.";
+
         return;
     }
 
@@ -1191,17 +1300,25 @@ async function createPlaylist() {
             .trim();
 
     if (!name) {
-        alert("Enter a playlist name.");
+
+        alert(
+            "Enter a playlist name."
+        );
+
         return;
     }
 
     const { error } =
         await supabaseClient
             .from("playlists")
-            .insert({ name });
+            .insert({
+                name
+            });
 
     if (error) {
+
         alert(error.message);
+
         return;
     }
 
@@ -1274,7 +1391,9 @@ async function renamePlaylist(id) {
             .eq("id", id);
 
     if (error) {
+
         alert(error.message);
+
         return;
     }
 
@@ -1298,7 +1417,9 @@ async function deletePlaylist(id) {
             .eq("id", id);
 
     if (error) {
+
         alert(error.message);
+
         return;
     }
 
