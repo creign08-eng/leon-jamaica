@@ -1103,3 +1103,19 @@ body.light .brand {
         font-size: 10px;
     }
 }
+/* FIX ZOOMED HERO GALLERY PHOTOS */
+
+.hero-background-item {
+    aspect-ratio: 4 / 3 !important;
+    overflow: hidden !important;
+    background: #111 !important;
+}
+
+.hero-background-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    transform: none !important;
+    scale: 1 !important;
+}
