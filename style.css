@@ -510,3 +510,58 @@ body.light .brand {
     cursor: pointer;
     font-size: 13px;
 }
+/* ==========================================
+   FULLSCREEN MEDIA VIEWER
+   ========================================== */
+
+.media-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.96);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.media-viewer.hidden {
+    display: none;
+}
+
+.media-viewer-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-viewer-content img,
+.media-viewer-content video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.media-viewer-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.media-viewer-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
