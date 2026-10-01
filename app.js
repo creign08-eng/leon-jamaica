@@ -4034,3 +4034,78 @@ async function resetHeroBackground() {
         "Home background is now using your latest photo ❤️"
     );
 }
+async function playMemorySong(memoryId) {
+
+    const { data: song, error } =
+        await supabaseClient
+            .from("memories")
+            .select("*")
+            .eq("id", memoryId)
+            .single();
+
+    if (error || !song) {
+        alert("Song not found.");
+        return;
+    }
+
+    if (song.media_type !== "music") {
+        alert("This is not a music file.");
+        return;
+    }
+
+    let songs = [];
+
+    if (song.playlist_id) {
+
+        const { data, error } =
+            await supabaseClient
+                .from("memories")
+                .select("*")
+                .eq("playlist_id", song.playlist_id)
+                .eq("media_type", "music")
+                .order("created_at", {
+                    ascending: true
+                });
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        songs = data || [];
+
+    } else {
+
+        const { data, error } =
+            await supabaseClient
+                .from("memories")
+                .select("*")
+                .eq("media_type", "music")
+                .order("created_at", {
+                    ascending: true
+                });
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        songs = data || [];
+    }
+
+    currentPlaylist = songs;
+
+    const index =
+        currentPlaylist.findIndex(
+            item => item.id === memoryId
+        );
+
+    if (index === -1) {
+        currentPlaylist = [song];
+        currentSongIndex = 0;
+        await playSong(0);
+        return;
+    }
+
+    await playSong(index);
+}
