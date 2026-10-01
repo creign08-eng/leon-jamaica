@@ -4,7 +4,6 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_U2CbY-32ZYfAtp7YRlokcQ_uK8bKsQ6";
 
-
 const supabaseClient =
     supabase.createClient(
         SUPABASE_URL,
@@ -12,16 +11,9 @@ const supabaseClient =
     );
 
 
-/* YOUR LOGIN USERNAME */
+/* WEBSITE LOGIN */
 
 const WEBSITE_USERNAME = "leon&majica";
-
-
-/*
-IMPORTANT:
-Put the EMAIL ADDRESS you used when
-you created the Supabase user here.
-*/
 
 const SUPABASE_EMAIL = "creign_liu17@yahoo.com";
 
@@ -66,6 +58,8 @@ async function login() {
 
         message.textContent =
             "Incorrect username or password.";
+
+        console.error(error);
 
         return;
     }
@@ -140,7 +134,170 @@ function showSection(section) {
 }
 
 
-/* LOAD MEMORIES */
+/* =========================
+   UPLOAD MEMORIES
+========================= */
+
+async function uploadMemories() {
+
+    const fileInput =
+        document.getElementById("memoryFiles");
+
+    const type =
+        document.getElementById("memoryType").value;
+
+    const status =
+        document.getElementById("uploadStatus");
+
+    const button =
+        document.getElementById("uploadButton");
+
+
+    const files = fileInput.files;
+
+
+    if (!files || files.length === 0) {
+
+        status.textContent =
+            "Please choose a file first.";
+
+        return;
+    }
+
+
+    button.disabled = true;
+
+    status.textContent =
+        "Uploading your memories...";
+
+
+    let successful = 0;
+
+
+    try {
+
+        for (const file of files) {
+
+            status.textContent =
+                `Uploading ${file.name}...`;
+
+
+            /*
+            Create a unique filename so files
+            with the same name don't overwrite
+            each other.
+            */
+
+            const extension =
+                file.name.includes(".")
+                    ? file.name.split(".").pop()
+                    : "";
+
+            const uniqueName =
+                `${crypto.randomUUID()}${extension ? "." + extension : ""}`;
+
+
+            const filePath =
+                `${type}s/${uniqueName}`;
+
+
+            /*
+            Upload file to Supabase Storage
+            */
+
+            const { error: uploadError } =
+                await supabaseClient
+                    .storage
+                    .from("memories")
+                    .upload(
+                        filePath,
+                        file,
+                        {
+                            cacheControl: "3600",
+                            upsert: false
+                        }
+                    );
+
+
+            if (uploadError) {
+
+                console.error(uploadError);
+
+                status.textContent =
+                    `Could not upload ${file.name}`;
+
+                continue;
+            }
+
+
+            /*
+            Save information about the file
+            in the memories database table.
+            */
+
+            const { error: databaseError } =
+                await supabaseClient
+                    .from("memories")
+                    .insert({
+
+                        title: file.name,
+
+                        description: "",
+
+                        media_type: type,
+
+                        file_path: filePath
+
+                    });
+
+
+            if (databaseError) {
+
+                console.error(databaseError);
+
+                status.textContent =
+                    `File uploaded, but information could not be saved: ${file.name}`;
+
+                continue;
+            }
+
+
+            successful++;
+
+        }
+
+
+        status.textContent =
+            `❤️ ${successful} memory${successful === 1 ? "" : "ies"} uploaded successfully!`;
+
+
+        fileInput.value = "";
+
+
+        /*
+        Refresh all galleries
+        */
+
+        await loadMemories();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Something went wrong while uploading.";
+
+    }
+
+
+    button.disabled = false;
+}
+
+
+/* =========================
+   LOAD MEMORIES
+========================= */
 
 async function loadMemories() {
 
@@ -186,6 +343,8 @@ async function loadMemories() {
     for (const memory of data) {
 
 
+        /* PHOTO */
+
         if (memory.media_type === "photo") {
 
             const url =
@@ -194,14 +353,25 @@ async function loadMemories() {
 
             photos.innerHTML += `
 
-                <img
-                    src="${url}"
-                    alt="${memory.title}"
-                >
+                <div class="memory-card">
+
+                    <img
+                        src="${url}"
+                        alt="${escapeHTML(memory.title || "Memory")}"
+                        loading="lazy"
+                    >
+
+                    <p>
+                        ${escapeHTML(memory.title || "")}
+                    </p>
+
+                </div>
 
             `;
         }
 
+
+        /* VIDEO */
 
         if (memory.media_type === "video") {
 
@@ -213,10 +383,13 @@ async function loadMemories() {
 
                 <div class="video-card">
 
-                    <h3>${memory.title}</h3>
+                    <h3>
+                        ${escapeHTML(memory.title || "Video")}
+                    </h3>
 
                     <video
                         controls
+                        playsinline
                         src="${url}">
                     </video>
 
@@ -225,6 +398,8 @@ async function loadMemories() {
             `;
         }
 
+
+        /* MUSIC */
 
         if (memory.media_type === "music") {
 
@@ -236,7 +411,9 @@ async function loadMemories() {
 
                 <div class="music-card">
 
-                    <h3>${memory.title}</h3>
+                    <h3>
+                        🎵 ${escapeHTML(memory.title || "Music")}
+                    </h3>
 
                     <audio
                         controls
@@ -249,15 +426,21 @@ async function loadMemories() {
         }
 
 
+        /* MESSAGE */
+
         if (memory.media_type === "message") {
 
             messages.innerHTML += `
 
                 <div class="message-card">
 
-                    <h3>${memory.title}</h3>
+                    <h3>
+                        ${escapeHTML(memory.title || "Message")}
+                    </h3>
 
-                    <p>${memory.description || ""}</p>
+                    <p>
+                        ${escapeHTML(memory.description || "")}
+                    </p>
 
                 </div>
 
@@ -269,7 +452,9 @@ async function loadMemories() {
 }
 
 
-/* PRIVATE FILE URL */
+/* =========================
+   GET PRIVATE FILE URL
+========================= */
 
 async function getFileUrl(path) {
 
@@ -293,5 +478,21 @@ async function getFileUrl(path) {
 
 
     return data.signedUrl;
+
+}
+
+
+/* =========================
+   PROTECT DISPLAYED TEXT
+========================= */
+
+function escapeHTML(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
 }
