@@ -2924,9 +2924,11 @@ async function loadLoveHero() {
     }
 
     if (!data || data.length === 0) {
-        console.log("No photos found for hero.");
-        return;
-    }
+    alert("NO PHOTOS FOUND");
+    return;
+}
+
+alert("PHOTO FOUND: " + data[0].title);
 
     const photo = data[0];
 
