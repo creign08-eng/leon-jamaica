@@ -464,8 +464,19 @@ async function createMemoryCard(memory) {
             </div>`;
     }
 
+    const favoriteButton =
+        `<button
+            class="favorite-overlay"
+            onclick="toggleFavorite('${memory.id}', ${memory.is_favorite === true})"
+            title="${memory.is_favorite === true ? "Remove from Favorites" : "Add to Favorites"}"
+        >
+            ${memory.is_favorite === true ? "❤️" : "♡"}
+        </button>`;
+
     card.innerHTML = `
         ${media}
+
+        ${favoriteButton}
 
         <div class="card-info">
 
@@ -488,9 +499,10 @@ async function createMemoryCard(memory) {
             <button onclick="renameMemory('${memory.id}')">
                 ✏️ Rename
             </button>
+
             <button onclick="toggleFavorite('${memory.id}', ${memory.is_favorite === true})">
-    ${memory.is_favorite === true ? "💔 Remove Favorite" : "❤️ Favorite"}
-</button>
+                ${memory.is_favorite === true ? "💔 Remove Favorite" : "❤️ Favorite"}
+            </button>
 
             <button
                 class="delete-button"
