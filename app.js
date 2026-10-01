@@ -462,7 +462,9 @@ async function createMemoryCard(memory) {
                        </audio>`
                     : ""
             }
-
+            <button onclick="renameMemory('${memory.id}')">
+    ✏️ Rename
+</button>
             <button
                 class="delete-button"
                 onclick="deleteMemory('${memory.id}','${escapeHtml(memory.file_path || "")}')"
