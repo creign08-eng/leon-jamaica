@@ -3794,7 +3794,6 @@ document.addEventListener(
    ========================================= */
 
 async function openHeroBackgroundManager() {
-async function openHeroBackgroundManager() {
 
     const modal =
         document.getElementById(
