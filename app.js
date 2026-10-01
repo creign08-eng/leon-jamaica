@@ -3575,7 +3575,8 @@ async function toggleFavorite(
 
 async function loadLoveHero() {
 
-    const hero = document.getElementById("loveHero");
+    const hero =
+        document.getElementById("loveHero");
 
     if (!hero) {
         return;
@@ -3583,52 +3584,129 @@ async function loadLoveHero() {
 
     try {
 
-        const { data, error } = await supabaseClient
-            .from("memories")
-            .select("file_path,title,created_at")
-            .eq("media_type", "photo")
-            .order("created_at", {
-                ascending: false
-            })
-            .limit(1);
+        /*
+         * Check whether a manual hero
+         * background has been selected.
+         */
 
-        if (error) {
-            console.error("Hero photo error:", error);
-            return;
+        const {
+            data: settings,
+            error: settingsError
+        } = await supabaseClient
+            .from("site_settings")
+            .select("hero_path")
+            .eq("id", 1)
+            .single();
+
+        if (settingsError) {
+
+            console.error(
+                "Hero settings error:",
+                settingsError
+            );
+
         }
 
-        if (!data || data.length === 0) {
-            console.log("No photos found for hero.");
-            return;
-        }
+        let heroPath =
+            settings?.hero_path || null;
 
-        const photo = data[0];
 
-        const { data: signedData, error: signedError } =
-            await supabaseClient
-                .storage
+        /*
+         * If no manual background exists,
+         * use the latest uploaded photo.
+         */
+
+        if (!heroPath) {
+
+            const {
+                data: latestPhoto,
+                error: photoError
+            } = await supabaseClient
                 .from("memories")
-                .createSignedUrl(
-                    photo.file_path,
-                    3600
+                .select(
+                    "file_path,title,created_at"
+                )
+                .eq(
+                    "media_type",
+                    "photo"
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                )
+                .limit(1);
+
+            if (photoError) {
+
+                console.error(
+                    "Latest photo error:",
+                    photoError
                 );
 
+                return;
+            }
+
+            if (
+                !latestPhoto ||
+                latestPhoto.length === 0
+            ) {
+
+                console.log(
+                    "No photos available for hero."
+                );
+
+                return;
+            }
+
+            heroPath =
+                latestPhoto[0].file_path;
+        }
+
+
+        /*
+         * Create a temporary secure URL
+         * for the private Supabase photo.
+         */
+
+        const {
+            data: signedData,
+            error: signedError
+        } = await supabaseClient
+            .storage
+            .from("memories")
+            .createSignedUrl(
+                heroPath,
+                3600
+            );
+
         if (signedError) {
+
             console.error(
                 "Hero signed URL error:",
                 signedError
             );
+
             return;
         }
 
-        if (!signedData || !signedData.signedUrl) {
+        if (
+            !signedData ||
+            !signedData.signedUrl
+        ) {
+
             console.error(
-                "Hero signed URL is missing."
+                "Hero signed URL missing."
             );
+
             return;
         }
 
-        const url = signedData.signedUrl;
+
+        /*
+         * Display the selected photo.
+         */
 
         hero.style.backgroundImage =
             `linear-gradient(
@@ -3637,13 +3715,21 @@ async function loadLoveHero() {
                 rgba(0, 0, 0, 0.45),
                 rgba(0, 0, 0, 0.18)
             ),
-            url("${url}")`;
+            url("${signedData.signedUrl}")`;
 
-        hero.style.backgroundSize = "cover";
-        hero.style.backgroundPosition = "center";
-        hero.style.backgroundRepeat = "no-repeat";
+        hero.style.backgroundSize =
+            "cover";
 
-        console.log("Hero background loaded successfully.");
+        hero.style.backgroundPosition =
+            "center";
+
+        hero.style.backgroundRepeat =
+            "no-repeat";
+
+
+        console.log(
+            "Hero background loaded."
+        );
 
     } catch (error) {
 
@@ -3651,10 +3737,8 @@ async function loadLoveHero() {
             "Unexpected hero error:",
             error
         );
-
     }
 }
-
 
 // ==========================================
 // SECURITY / HTML ESCAPE
