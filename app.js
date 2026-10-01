@@ -24,45 +24,158 @@ const LOGIN_PASSWORD = "12082000";
 
 async function login() {
 
-    const username =
-        document.getElementById("loginUsername").value.trim();
+    const usernameInput =
+        document.getElementById("loginUsername");
 
-    const password =
-        document.getElementById("loginPassword").value;
+    const passwordInput =
+        document.getElementById("loginPassword");
 
     const error =
         document.getElementById("loginError");
 
+    const loginButton =
+        document.querySelector(
+            '#loginPage button[onclick="login()"]'
+        );
+
+    if (!usernameInput || !passwordInput || !error) {
+        alert("Login page could not be loaded correctly.");
+        return;
+    }
+
+    const username =
+        usernameInput.value.trim();
+
+    const password =
+        passwordInput.value;
+
     error.textContent = "";
 
     if (username !== LOGIN_USERNAME) {
-        error.textContent = "Incorrect username.";
+
+        error.textContent =
+            "Incorrect username.";
+
         return;
     }
 
     if (password !== LOGIN_PASSWORD) {
-        error.textContent = "Incorrect password.";
+
+        error.textContent =
+            "Incorrect password.";
+
         return;
     }
 
-    const { error: loginError } =
-        await supabaseClient.auth.signInWithPassword({
-            email: LOGIN_EMAIL,
-            password: LOGIN_PASSWORD
-        });
+    if (!window.supabase) {
 
-    if (loginError) {
-        error.textContent = loginError.message;
+        error.textContent =
+            "Supabase is not loaded. Please refresh the page.";
+
         return;
     }
 
-    showWebsite();
+    if (loginButton) {
+        loginButton.disabled = true;
+        loginButton.textContent = "Entering...";
+    }
+
+    try {
+
+        const result =
+            await supabaseClient.auth.signInWithPassword({
+                email: LOGIN_EMAIL,
+                password: LOGIN_PASSWORD
+            });
+
+        if (result.error) {
+
+            console.error(
+                "Supabase login error:",
+                result.error
+            );
+
+            error.textContent =
+                result.error.message;
+
+            return;
+        }
+
+        await showWebsite();
+
+    } catch (err) {
+
+        console.error(
+            "Login error:",
+            err
+        );
+
+        error.textContent =
+            "Unable to log in. Please refresh the page and try again.";
+
+    } finally {
+
+        if (loginButton) {
+            loginButton.disabled = false;
+            loginButton.textContent =
+                "Enter Our Memories";
+        }
+    }
 }
+
+
+// Allow the Enter key to log in
+document.addEventListener("DOMContentLoaded", () => {
+
+    const usernameInput =
+        document.getElementById("loginUsername");
+
+    const passwordInput =
+        document.getElementById("loginPassword");
+
+    if (usernameInput) {
+
+        usernameInput.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+                    login();
+                }
+
+            }
+        );
+    }
+
+    if (passwordInput) {
+
+        passwordInput.addEventListener(
+            "keydown",
+            event => {
+
+                if (event.key === "Enter") {
+                    login();
+                }
+
+            }
+        );
+    }
+});
 
 
 async function logout() {
 
-    await supabaseClient.auth.signOut();
+    try {
+
+        await supabaseClient.auth.signOut();
+
+    } catch (error) {
+
+        console.error(
+            "Logout error:",
+            error
+        );
+    }
 
     document
         .getElementById("website")
