@@ -388,7 +388,6 @@ async function loadAlbums() {
 
     for (const album of data) {
 
-        // Find newest photo in this album
         const { data: coverPhotos } =
             await supabaseClient
                 .from("memories")
@@ -437,18 +436,6 @@ async function loadAlbums() {
                     >
 
                 </div>
-
-                <h3>
-                    ${escapeHtml(album.name)}
-                </h3>
-
-                <p>
-                    ${escapeHtml(album.description || "")}
-                </p>
-
-                <button onclick="openAlbum('${album.id}')">
-                    Open
-                </button>
             `;
 
         } else {
@@ -465,24 +452,44 @@ async function loadAlbums() {
                     font-size:55px;
                     margin-bottom:12px;
                 ">
-
                     ${album.media_type === "video" ? "🎬" : "📸"}
-
                 </div>
+            `;
+        }
 
-                <h3>
-                    ${escapeHtml(album.name)}
-                </h3>
+        folder.innerHTML += `
+            <h3>
+                ${escapeHtml(album.name)}
+            </h3>
 
-                <p>
-                    ${escapeHtml(album.description || "")}
-                </p>
+            <p>
+                ${escapeHtml(album.description || "")}
+            </p>
+
+            <div style="
+                display:flex;
+                gap:8px;
+                flex-wrap:wrap;
+                margin-top:10px;
+            ">
 
                 <button onclick="openAlbum('${album.id}')">
                     Open
                 </button>
-            `;
-        }
+
+                <button onclick="renameAlbum('${album.id}')">
+                    ✏️ Rename
+                </button>
+
+                <button
+                    class="delete-button"
+                    onclick="deleteAlbum('${album.id}')"
+                >
+                    🗑️ Delete
+                </button>
+
+            </div>
+        `;
 
         gallery.appendChild(folder);
     }
@@ -680,14 +687,20 @@ async function loadAlbumManager() {
 async function renameAlbum(id) {
 
     const name =
-        prompt("New folder name:");
+        prompt("Enter the new folder name:");
 
     if (!name) return;
+
+    const cleanName = name.trim();
+
+    if (!cleanName) return;
 
     const { error } =
         await supabaseClient
             .from("albums")
-            .update({ name })
+            .update({
+                name: cleanName
+            })
             .eq("id", id);
 
     if (error) {
@@ -695,19 +708,20 @@ async function renameAlbum(id) {
         return;
     }
 
-    await loadAlbumManager();
     await loadAlbums();
     await loadVideos();
+    await loadAlbumManager();
 }
 
 
 async function deleteAlbum(id) {
 
-    if (!confirm(
-        "Delete this folder? The memories inside will not be deleted."
-    )) {
-        return;
-    }
+    const confirmed =
+        confirm(
+            "Delete this folder?\n\nThe photos/videos inside the folder will NOT be deleted."
+        );
+
+    if (!confirmed) return;
 
     const { error } =
         await supabaseClient
@@ -720,9 +734,11 @@ async function deleteAlbum(id) {
         return;
     }
 
-    await loadAlbumManager();
+    alert("Folder deleted successfully.");
+
     await loadAlbums();
     await loadVideos();
+    await loadAlbumManager();
     await loadAlbumOptions();
 }
 
@@ -771,7 +787,6 @@ async function loadVideos() {
 
         folder.className = "folder";
 
-        // Find newest video for cover
         const { data: coverVideos } =
             await supabaseClient
                 .from("memories")
@@ -816,14 +831,6 @@ async function loadVideos() {
                     ></video>
 
                 </div>
-
-                <h3>
-                    ${escapeHtml(album.name)}
-                </h3>
-
-                <button onclick="openVideoFolder('${album.id}')">
-                    Open Videos
-                </button>
             `;
 
         } else {
@@ -842,16 +849,42 @@ async function loadVideos() {
                 ">
                     🎬
                 </div>
+            `;
+        }
 
-                <h3>
-                    ${escapeHtml(album.name)}
-                </h3>
+        folder.innerHTML += `
+            <h3>
+                ${escapeHtml(album.name)}
+            </h3>
+
+            <p>
+                ${escapeHtml(album.description || "")}
+            </p>
+
+            <div style="
+                display:flex;
+                gap:8px;
+                flex-wrap:wrap;
+                margin-top:10px;
+            ">
 
                 <button onclick="openVideoFolder('${album.id}')">
                     Open Videos
                 </button>
-            `;
-        }
+
+                <button onclick="renameAlbum('${album.id}')">
+                    ✏️ Rename
+                </button>
+
+                <button
+                    class="delete-button"
+                    onclick="deleteVideoFolder('${album.id}')"
+                >
+                    🗑️ Delete
+                </button>
+
+            </div>
+        `;
 
         gallery.appendChild(folder);
     }
@@ -1076,7 +1109,8 @@ async function openPlaylist(id) {
 
     document
         .getElementById("playlistViewerTitle")
-        .textContent = playlist.name;
+        .textContent =
+        playlist.name;
 
     const songList =
         document.getElementById("playlistSongs");
@@ -1234,7 +1268,9 @@ async function renamePlaylist(id) {
     const { error } =
         await supabaseClient
             .from("playlists")
-            .update({ name })
+            .update({
+                name: name.trim()
+            })
             .eq("id", id);
 
     if (error) {
@@ -1250,7 +1286,7 @@ async function renamePlaylist(id) {
 async function deletePlaylist(id) {
 
     if (!confirm(
-        "Delete this playlist? Songs will not be deleted."
+        "Delete this playlist? Songs will NOT be deleted."
     )) {
         return;
     }
