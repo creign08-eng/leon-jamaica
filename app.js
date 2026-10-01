@@ -2792,3 +2792,42 @@ document.getElementById("mediaViewer")?.addEventListener("click", function (even
     }
 
 });
+async function loadFavorites() {
+
+    const container =
+        document.getElementById("favoritesGallery");
+
+    if (!container) return;
+
+    container.innerHTML = "Loading favorites...";
+
+    const { data, error } =
+        await supabaseClient
+            .from("memories")
+            .select("*")
+            .eq("is_favorite", true)
+            .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error(error);
+        container.innerHTML =
+            "Unable to load favorites.";
+        return;
+    }
+
+    container.innerHTML = "";
+
+    if (!data || data.length === 0) {
+        container.innerHTML =
+            "<p>No favorite memories yet ❤️</p>";
+        return;
+    }
+
+    for (const memory of data) {
+
+        container.appendChild(
+            await createMemoryCard(memory)
+        );
+
+    }
+}
