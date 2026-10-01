@@ -477,6 +477,12 @@ async function createMemoryCard(memory) {
 >
     ▶ Play Song
 </button>
+
+<button
+    onclick="addMemoryToPlaylist('${memory.id}')"
+>
+    ➕ Add to Playlist
+</button>
                     `
                     : ""
             }
