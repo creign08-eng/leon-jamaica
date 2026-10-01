@@ -488,6 +488,9 @@ async function createMemoryCard(memory) {
             <button onclick="renameMemory('${memory.id}')">
                 ✏️ Rename
             </button>
+            <button onclick="toggleFavorite('${memory.id}', ${memory.is_favorite === true})">
+    ${memory.is_favorite === true ? "💔 Remove Favorite" : "❤️ Favorite"}
+</button>
 
             <button
                 class="delete-button"
