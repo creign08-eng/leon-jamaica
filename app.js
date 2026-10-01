@@ -388,24 +388,101 @@ async function loadAlbums() {
 
     for (const album of data) {
 
+        // Find newest photo in this album
+        const { data: coverPhotos } =
+            await supabaseClient
+                .from("memories")
+                .select("file_path, title")
+                .eq("album_id", album.id)
+                .eq("media_type", "photo")
+                .order("created_at", { ascending: false })
+                .limit(1);
+
+        let coverUrl = "";
+
+        if (coverPhotos && coverPhotos.length > 0) {
+
+            coverUrl =
+                await getSignedUrl(
+                    coverPhotos[0].file_path
+                );
+        }
+
         const folder =
             document.createElement("div");
 
         folder.className = "folder";
 
-        folder.innerHTML = `
-            <div style="font-size:45px">
-                ${album.media_type === "video" ? "🎬" : "📸"}
-            </div>
+        if (coverUrl) {
 
-            <h3>${escapeHtml(album.name)}</h3>
+            folder.innerHTML = `
+                <div style="
+                    width:100%;
+                    height:180px;
+                    border-radius:14px;
+                    overflow:hidden;
+                    margin-bottom:12px;
+                    background:#222;
+                ">
 
-            <p>${escapeHtml(album.description || "")}</p>
+                    <img
+                        src="${coverUrl}"
+                        alt="${escapeHtml(album.name)}"
+                        style="
+                            width:100%;
+                            height:100%;
+                            object-fit:cover;
+                            display:block;
+                        "
+                    >
 
-            <button onclick="openAlbum('${album.id}')">
-                Open
-            </button>
-        `;
+                </div>
+
+                <h3>
+                    ${escapeHtml(album.name)}
+                </h3>
+
+                <p>
+                    ${escapeHtml(album.description || "")}
+                </p>
+
+                <button onclick="openAlbum('${album.id}')">
+                    Open
+                </button>
+            `;
+
+        } else {
+
+            folder.innerHTML = `
+                <div style="
+                    width:100%;
+                    height:180px;
+                    border-radius:14px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:linear-gradient(135deg,#222,#111);
+                    font-size:55px;
+                    margin-bottom:12px;
+                ">
+
+                    ${album.media_type === "video" ? "🎬" : "📸"}
+
+                </div>
+
+                <h3>
+                    ${escapeHtml(album.name)}
+                </h3>
+
+                <p>
+                    ${escapeHtml(album.description || "")}
+                </p>
+
+                <button onclick="openAlbum('${album.id}')">
+                    Open
+                </button>
+            `;
+        }
 
         gallery.appendChild(folder);
     }
@@ -466,6 +543,7 @@ async function openAlbum(albumId) {
     }
 
     for (const memory of memories) {
+
         memoryGallery.appendChild(
             await createMemoryCard(memory)
         );
@@ -581,7 +659,9 @@ async function loadAlbumManager() {
         row.style.padding = "10px 0";
 
         row.innerHTML = `
-            <strong>${escapeHtml(album.name)}</strong>
+            <strong>
+                ${escapeHtml(album.name)}
+            </strong>
 
             <button onclick="renameAlbum('${album.id}')">
                 Rename
@@ -623,7 +703,9 @@ async function renameAlbum(id) {
 
 async function deleteAlbum(id) {
 
-    if (!confirm("Delete this folder? The memories inside will not be deleted.")) {
+    if (!confirm(
+        "Delete this folder? The memories inside will not be deleted."
+    )) {
         return;
     }
 
@@ -656,7 +738,8 @@ async function loadVideos() {
 
     if (!gallery) return;
 
-    gallery.innerHTML = "Loading video folders...";
+    gallery.innerHTML =
+        "Loading video folders...";
 
     const { data, error } =
         await supabaseClient
@@ -666,7 +749,8 @@ async function loadVideos() {
             .order("created_at", { ascending: false });
 
     if (error) {
-        gallery.innerHTML = "Unable to load video folders.";
+        gallery.innerHTML =
+            "Unable to load video folders.";
         return;
     }
 
@@ -687,15 +771,87 @@ async function loadVideos() {
 
         folder.className = "folder";
 
-        folder.innerHTML = `
-            <div style="font-size:45px">🎬</div>
+        // Find newest video for cover
+        const { data: coverVideos } =
+            await supabaseClient
+                .from("memories")
+                .select("file_path, title")
+                .eq("album_id", album.id)
+                .eq("media_type", "video")
+                .order("created_at", { ascending: false })
+                .limit(1);
 
-            <h3>${escapeHtml(album.name)}</h3>
+        let videoUrl = "";
 
-            <button onclick="openVideoFolder('${album.id}')">
-                Open Videos
-            </button>
-        `;
+        if (coverVideos && coverVideos.length > 0) {
+
+            videoUrl =
+                await getSignedUrl(
+                    coverVideos[0].file_path
+                );
+        }
+
+        if (videoUrl) {
+
+            folder.innerHTML = `
+                <div style="
+                    width:100%;
+                    height:180px;
+                    border-radius:14px;
+                    overflow:hidden;
+                    margin-bottom:12px;
+                    background:#111;
+                ">
+
+                    <video
+                        src="${videoUrl}"
+                        muted
+                        preload="metadata"
+                        style="
+                            width:100%;
+                            height:100%;
+                            object-fit:cover;
+                            display:block;
+                        "
+                    ></video>
+
+                </div>
+
+                <h3>
+                    ${escapeHtml(album.name)}
+                </h3>
+
+                <button onclick="openVideoFolder('${album.id}')">
+                    Open Videos
+                </button>
+            `;
+
+        } else {
+
+            folder.innerHTML = `
+                <div style="
+                    width:100%;
+                    height:180px;
+                    border-radius:14px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:linear-gradient(135deg,#222,#111);
+                    font-size:55px;
+                    margin-bottom:12px;
+                ">
+                    🎬
+                </div>
+
+                <h3>
+                    ${escapeHtml(album.name)}
+                </h3>
+
+                <button onclick="openVideoFolder('${album.id}')">
+                    Open Videos
+                </button>
+            `;
+        }
 
         gallery.appendChild(folder);
     }
@@ -726,8 +882,13 @@ async function openVideoFolder(id) {
 
     gallery.innerHTML = `
         <div style="grid-column:1/-1">
-            <button onclick="loadVideos()">← Back</button>
-            <h2>${escapeHtml(album.name)}</h2>
+            <button onclick="loadVideos()">
+                ← Back
+            </button>
+
+            <h2>
+                ${escapeHtml(album.name)}
+            </h2>
         </div>
     `;
 
@@ -817,7 +978,8 @@ async function loadPlaylists() {
 
     if (!gallery) return;
 
-    gallery.innerHTML = "Loading playlists...";
+    gallery.innerHTML =
+        "Loading playlists...";
 
     const { data, error } =
         await supabaseClient
@@ -826,7 +988,8 @@ async function loadPlaylists() {
             .order("created_at", { ascending: false });
 
     if (error) {
-        gallery.innerHTML = "Unable to load playlists.";
+        gallery.innerHTML =
+            "Unable to load playlists.";
         return;
     }
 
@@ -848,9 +1011,27 @@ async function loadPlaylists() {
         folder.className = "folder";
 
         folder.innerHTML = `
-            <div style="font-size:45px">🎵</div>
+            <div style="
+                width:100%;
+                height:180px;
+                border-radius:14px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:linear-gradient(135deg,#222,#111);
+                font-size:55px;
+                margin-bottom:12px;
+            ">
+                🎵
+            </div>
 
-            <h3>${escapeHtml(playlist.name)}</h3>
+            <h3>
+                ${escapeHtml(playlist.name)}
+            </h3>
+
+            <p>
+                ${escapeHtml(playlist.description || "")}
+            </p>
 
             <button onclick="openPlaylist('${playlist.id}')">
                 Open Playlist
@@ -913,9 +1094,6 @@ async function openPlaylist(id) {
     for (let i = 0; i < songs.length; i++) {
 
         const song = songs[i];
-
-        const url =
-            await getSignedUrl(song.file_path);
 
         const row =
             document.createElement("div");
@@ -1028,7 +1206,9 @@ async function loadPlaylistManager() {
         row.style.padding = "10px 0";
 
         row.innerHTML = `
-            <strong>${escapeHtml(playlist.name)}</strong>
+            <strong>
+                ${escapeHtml(playlist.name)}
+            </strong>
 
             <button onclick="renamePlaylist('${playlist.id}')">
                 Rename
@@ -1069,7 +1249,9 @@ async function renamePlaylist(id) {
 
 async function deletePlaylist(id) {
 
-    if (!confirm("Delete this playlist? Songs will not be deleted.")) {
+    if (!confirm(
+        "Delete this playlist? Songs will not be deleted."
+    )) {
         return;
     }
 
@@ -1207,7 +1389,10 @@ async function uploadMemories() {
         document.getElementById("memoryType").value;
 
     const title =
-        document.getElementById("memoryTitle").value.trim();
+        document
+            .getElementById("memoryTitle")
+            .value
+            .trim();
 
     const description =
         document
@@ -1232,7 +1417,8 @@ async function uploadMemories() {
         return;
     }
 
-    status.textContent = "Uploading...";
+    status.textContent =
+        "Uploading...";
 
     for (const file of files) {
 
@@ -1268,9 +1454,11 @@ async function uploadMemories() {
 
                     description,
 
-                    media_type: type,
+                    media_type:
+                        type,
 
-                    file_path: path,
+                    file_path:
+                        path,
 
                     album_id:
                         albumId || null,
@@ -1330,7 +1518,9 @@ async function loadAlbumOptions() {
         const option =
             document.createElement("option");
 
-        option.value = album.id;
+        option.value =
+            album.id;
+
         option.textContent =
             `${album.media_type === "video" ? "🎬" : "📸"} ${album.name}`;
 
@@ -1362,7 +1552,9 @@ async function loadPlaylistOptions() {
         const option =
             document.createElement("option");
 
-        option.value = playlist.id;
+        option.value =
+            playlist.id;
+
         option.textContent =
             `🎵 ${playlist.name}`;
 
@@ -1382,7 +1574,8 @@ async function loadMessages() {
 
     if (!gallery) return;
 
-    gallery.innerHTML = "Loading messages...";
+    gallery.innerHTML =
+        "Loading messages...";
 
     const { data, error } =
         await supabaseClient
@@ -1415,7 +1608,8 @@ async function loadMessages() {
         const card =
             document.createElement("div");
 
-        card.className = "message-card";
+        card.className =
+            "message-card";
 
         card.innerHTML = `
             <h3>
@@ -1499,7 +1693,9 @@ async function saveMessage() {
 
     if (!title || !content) {
 
-        alert("Please enter a title and message.");
+        alert(
+            "Please enter a title and message."
+        );
 
         return;
     }
@@ -1556,7 +1752,9 @@ async function editMessage(id) {
 
     if (error || !data) {
 
-        alert("Unable to open message.");
+        alert(
+            "Unable to open message."
+        );
 
         return;
     }
@@ -1589,7 +1787,9 @@ async function editMessage(id) {
 
 async function deleteMessage(id) {
 
-    if (!confirm("Delete this message?")) {
+    if (!confirm(
+        "Delete this message?"
+    )) {
         return;
     }
 
@@ -1638,7 +1838,8 @@ async function loadBackgroundPhotos() {
         const option =
             document.createElement("option");
 
-        option.value = photo.file_path;
+        option.value =
+            photo.file_path;
 
         option.textContent =
             photo.title || "Photo";
@@ -1670,9 +1871,14 @@ async function setBackgroundPhoto() {
     document.body.style.backgroundImage =
         `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),url("${url}")`;
 
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundAttachment = "fixed";
+    document.body.style.backgroundSize =
+        "cover";
+
+    document.body.style.backgroundPosition =
+        "center";
+
+    document.body.style.backgroundAttachment =
+        "fixed";
 
     localStorage.setItem(
         "leonMajicaBackground",
@@ -1698,15 +1904,21 @@ async function loadBackground() {
     document.body.style.backgroundImage =
         `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),url("${url}")`;
 
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundAttachment = "fixed";
+    document.body.style.backgroundSize =
+        "cover";
+
+    document.body.style.backgroundPosition =
+        "center";
+
+    document.body.style.backgroundAttachment =
+        "fixed";
 }
 
 
 function removeBackgroundPhoto() {
 
-    document.body.style.backgroundImage = "";
+    document.body.style.backgroundImage =
+        "";
 
     localStorage.removeItem(
         "leonMajicaBackground"
@@ -1726,11 +1938,15 @@ function setTheme(theme) {
     );
 
     if (theme === "romantic") {
-        document.body.classList.add("romantic");
+        document.body.classList.add(
+            "romantic"
+        );
     }
 
     if (theme === "light") {
-        document.body.classList.add("light");
+        document.body.classList.add(
+            "light"
+        );
     }
 
     localStorage.setItem(
@@ -1759,7 +1975,10 @@ function restoreTheme() {
 
 function escapeHtml(value) {
 
-    if (value === null || value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return "";
     }
 
