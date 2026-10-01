@@ -2916,12 +2916,13 @@ async function loadLoveHero() {
             .limit(1);
 
     if (error) {
-        console.error(
-            "Hero photo database error:",
-            error
-        );
-        return;
-    }
+    alert("DATABASE ERROR: " + error.message);
+    console.error(
+        "Hero photo database error:",
+        error
+    );
+    return;
+}
 
     if (!data || data.length === 0) {
     alert("NO PHOTOS FOUND");
