@@ -3897,14 +3897,21 @@ async function openHeroBackgroundManager() {
             );
         }
 
-        const image =
-            document.createElement("img");
+        const image = document.createElement("img");
 
-        image.src = url;
+image.setAttribute("src", url);
+image.setAttribute("alt", photo.title || "Memory");
 
-        image.alt =
-            photo.title ||
-            "Memory";
+image.style.cssText = `
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    position: relative;
+    inset: auto;
+    transform: none;
+`;
 
         const name =
             document.createElement("div");
