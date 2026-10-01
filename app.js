@@ -3705,3 +3705,125 @@ document.addEventListener(
 
     }
 );
+/* =========================================
+   MANUAL HERO BACKGROUND
+   ========================================= */
+
+async function openHeroBackgroundManager() {
+
+    const { data, error } =
+        await supabaseClient
+            .from("memories")
+            .select("id,title,file_path,created_at")
+            .eq("media_type", "photo")
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        alert(
+            "Unable to load photos: " +
+            error.message
+        );
+
+        return;
+    }
+
+    if (!data || data.length === 0) {
+
+        alert(
+            "You don't have any photos yet."
+        );
+
+        return;
+    }
+
+    let message =
+        "Choose a photo for the Home background:\n\n";
+
+    data.forEach((photo, index) => {
+
+        message +=
+            `${index + 1}. ${photo.title || "Untitled"}\n`;
+
+    });
+
+    const choice =
+        prompt(message);
+
+    if (choice === null) {
+        return;
+    }
+
+    const number =
+        parseInt(choice, 10);
+
+    if (
+        isNaN(number) ||
+        number < 1 ||
+        number > data.length
+    ) {
+
+        alert("Please enter a valid number.");
+
+        return;
+    }
+
+    const selectedPhoto =
+        data[number - 1];
+
+    const { error: updateError } =
+        await supabaseClient
+            .from("site_settings")
+            .update({
+                hero_path: selectedPhoto.file_path,
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", 1);
+
+    if (updateError) {
+
+        alert(
+            "Unable to save hero background: " +
+            updateError.message
+        );
+
+        return;
+    }
+
+    await loadLoveHero();
+
+    alert(
+        "Home background changed successfully ❤️"
+    );
+}
+
+
+async function resetHeroBackground() {
+
+    const { error } =
+        await supabaseClient
+            .from("site_settings")
+            .update({
+                hero_path: null,
+                updated_at: new Date().toISOString()
+            })
+            .eq("id", 1);
+
+    if (error) {
+
+        alert(
+            "Unable to reset background: " +
+            error.message
+        );
+
+        return;
+    }
+
+    await loadLoveHero();
+
+    alert(
+        "Home background is now using your latest photo ❤️"
+    );
+}
