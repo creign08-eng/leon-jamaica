@@ -297,6 +297,7 @@ async function loadEverything() {
     await loadAlbumOptions();
     await loadPlaylistOptions();
     await loadBackgroundPhotos();
+    loadLoveHero();
 }
 
 
