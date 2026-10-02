@@ -4646,3 +4646,103 @@ if (musicAudio) {
         }
     );
 }
+
+/* CONNECT MUSIC PAGE PLAYER TO BOTTOM PLAYER */
+
+const mainMusicAudio =
+    document.getElementById("audioPlayer");
+
+const pageMusicAudio =
+    document.getElementById("spotifyAudio");
+
+function syncMusicPagePlayer() {
+    if (!mainMusicAudio || !pageMusicAudio) return;
+
+    // Both controls use the same song and playback position.
+    if (pageMusicAudio.src !== mainMusicAudio.src) {
+        pageMusicAudio.src = mainMusicAudio.src;
+    }
+
+    pageMusicAudio.currentTime =
+        mainMusicAudio.currentTime || 0;
+
+    pageMusicAudio.volume = mainMusicAudio.volume;
+}
+
+if (mainMusicAudio && pageMusicAudio) {
+
+    // Keep the circled player's display updated.
+    mainMusicAudio.addEventListener("play", () => {
+        pageMusicAudio.src = mainMusicAudio.src;
+        pageMusicAudio.currentTime =
+            mainMusicAudio.currentTime || 0;
+
+        document.getElementById(
+            "spotifyPlayPause"
+        ).textContent = "⏸";
+    });
+
+    mainMusicAudio.addEventListener("pause", () => {
+        document.getElementById(
+            "spotifyPlayPause"
+        ).textContent = "▶";
+    });
+
+    mainMusicAudio.addEventListener("timeupdate", () => {
+        if (!pageMusicAudio.duration) {
+            pageMusicAudio.currentTime =
+                mainMusicAudio.currentTime || 0;
+        }
+
+        const progress =
+            document.getElementById("spotifyProgress");
+
+        const currentTime =
+            document.getElementById("spotifyCurrentTime");
+
+        const duration =
+            document.getElementById("spotifyDuration");
+
+        if (progress && mainMusicAudio.duration) {
+            progress.value =
+                (mainMusicAudio.currentTime /
+                mainMusicAudio.duration) * 100;
+        }
+
+        const formatTime = seconds => {
+            if (!Number.isFinite(seconds)) return "0:00";
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60)
+                .toString().padStart(2, "0");
+            return `${minutes}:${secs}`;
+        };
+
+        if (currentTime) {
+            currentTime.textContent =
+                formatTime(mainMusicAudio.currentTime);
+        }
+
+        if (duration) {
+            duration.textContent =
+                formatTime(mainMusicAudio.duration);
+        }
+    });
+
+    document.getElementById("spotifyPlayPause")
+        ?.addEventListener("click", toggleMusic);
+
+    document.getElementById("spotifyPrevious")
+        ?.addEventListener("click", previousSong);
+
+    document.getElementById("spotifyNext")
+        ?.addEventListener("click", nextSong);
+
+    document.getElementById("spotifyProgress")
+        ?.addEventListener("input", event => {
+            if (mainMusicAudio.duration) {
+                mainMusicAudio.currentTime =
+                    (Number(event.target.value) / 100) *
+                    mainMusicAudio.duration;
+            }
+        });
+}
