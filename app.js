@@ -1149,6 +1149,8 @@ async function initializeApp() {
     initializeUploadButtons();
    
     initializeSettingsControls();
+   
+    initializeMusicBackgroundSettings();
 
 
     const messageButton =
@@ -3363,4 +3365,182 @@ function initializeSettingsControls() {
         });
 
     fillSettingsForm();
+}
+
+/* =========================================
+   MUSIC PLAYER PHOTO BACKGROUND
+   ========================================= */
+
+let musicBackgroundPreviewUrl = "";
+
+async function loadMusicGalleryPhotos() {
+    const select =
+        document.getElementById("musicGalleryPhoto");
+
+    if (!select) return;
+
+    try {
+        requireSupabase();
+
+        const records = await getMediaRecords();
+
+        select.innerHTML = "";
+
+        const photos = (records || []).filter(item =>
+            item.file_type === "photo" ||
+            item.file_type === "image" ||
+            (item.mime_type || "").startsWith("image/")
+        );
+
+        if (!photos.length) {
+            select.add(new Option("No gallery photos found", ""));
+            updateMusicBackgroundPreview();
+            return;
+        }
+
+        select.add(new Option("Choose a photo...", ""));
+
+        for (const photo of photos) {
+            const url = await getSignedUrl(photo.file_path);
+
+            if (!url) continue;
+
+            const option = new Option(
+                photo.file_name || "Gallery photo",
+                photo.file_path
+            );
+
+            option.dataset.imageUrl = url;
+
+            select.add(option);
+        }
+
+        updateMusicBackgroundPreview();
+
+    } catch (error) {
+        console.error("Could not load music background photos:", error);
+        select.innerHTML = "";
+        select.add(new Option("Could not load gallery photos", ""));
+    }
+}
+
+function updateMusicBackgroundSource() {
+    const source =
+        document.getElementById("musicPhotoSource")?.value;
+
+    const galleryWrap =
+        document.getElementById("musicGalleryPickerWrap");
+
+    const uploadWrap =
+        document.getElementById("musicUploadPickerWrap");
+
+    if (galleryWrap) {
+        galleryWrap.hidden = source !== "gallery";
+    }
+
+    if (uploadWrap) {
+        uploadWrap.hidden = source !== "upload";
+    }
+
+    updateMusicBackgroundPreview();
+}
+
+function updateMusicBackgroundPreview() {
+    const preview =
+        document.getElementById("musicBackgroundPreview");
+
+    if (!preview) return;
+
+    const brightness = Number(
+        document.getElementById("musicBrightness")?.value || 75
+    );
+
+    const source =
+        document.getElementById("musicPhotoSource")?.value;
+
+    let imageUrl = "";
+
+    if (source === "upload") {
+        const file =
+            document.getElementById("musicBackgroundUpload")
+                ?.files?.[0];
+
+        if (file) {
+            if (musicBackgroundPreviewUrl) {
+                URL.revokeObjectURL(musicBackgroundPreviewUrl);
+            }
+
+            musicBackgroundPreviewUrl =
+                URL.createObjectURL(file);
+
+            imageUrl = musicBackgroundPreviewUrl;
+        }
+    } else {
+        imageUrl =
+            document.getElementById("musicGalleryPhoto")
+                ?.selectedOptions?.[0]?.dataset?.imageUrl || "";
+    }
+
+    preview.style.filter = `brightness(${brightness}%)`;
+    preview.style.backgroundSize = "cover";
+    preview.style.backgroundPosition = "center";
+
+    if (imageUrl) {
+        preview.style.backgroundImage =
+            `url("${imageUrl}")`;
+
+        preview.innerHTML = "";
+    } else {
+        preview.style.backgroundImage =
+            "linear-gradient(135deg, #573642, #090909)";
+
+        preview.innerHTML =
+            "<span>Select a gallery photo or upload your own ❤️</span>";
+    }
+}
+
+function initializeMusicBackgroundSettings() {
+    document.getElementById("musicPhotoSource")
+        ?.addEventListener("change", updateMusicBackgroundSource);
+
+    document.getElementById("musicGalleryPhoto")
+        ?.addEventListener("change", updateMusicBackgroundPreview);
+
+    document.getElementById("musicBackgroundUpload")
+        ?.addEventListener("change", updateMusicBackgroundPreview);
+
+    document.getElementById("musicBrightness")
+        ?.addEventListener("input", updateMusicBackgroundPreview);
+
+    document.getElementById("previewMusicBackgroundButton")
+        ?.addEventListener("click", updateMusicBackgroundPreview);
+
+    document.getElementById("resetMusicBackgroundButton")
+        ?.addEventListener("click", () => {
+            const source =
+                document.getElementById("musicPhotoSource");
+
+            const gallery =
+                document.getElementById("musicGalleryPhoto");
+
+            const upload =
+                document.getElementById("musicBackgroundUpload");
+
+            const brightness =
+                document.getElementById("musicBrightness");
+
+            const style =
+                document.getElementById("musicPlayerBackground");
+
+            if (source) source.value = "gallery";
+            if (gallery) gallery.value = "";
+            if (upload) upload.value = "";
+            if (brightness) brightness.value = 75;
+            if (style) style.value = "default";
+
+            updateMusicBackgroundSource();
+            updateMusicBackgroundPreview();
+        });
+
+    loadMusicGalleryPhotos();
 }
