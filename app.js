@@ -4592,3 +4592,58 @@ function restoreMusicPlayer() {
         "music-player-minimized"
     );
 }
+const musicAudio =
+    document.getElementById("audioPlayer");
+
+if (musicAudio) {
+
+    musicAudio.addEventListener(
+        "play",
+        () => {
+
+            const button =
+                document.getElementById(
+                    "playPauseButton"
+                );
+
+            if (button) {
+                button.textContent = "⏸";
+            }
+
+            if ("mediaSession" in navigator) {
+                navigator.mediaSession.playbackState =
+                    "playing";
+            }
+        }
+    );
+
+
+    musicAudio.addEventListener(
+        "pause",
+        () => {
+
+            const button =
+                document.getElementById(
+                    "playPauseButton"
+                );
+
+            if (button) {
+                button.textContent = "▶";
+            }
+
+            if ("mediaSession" in navigator) {
+                navigator.mediaSession.playbackState =
+                    "paused";
+            }
+        }
+    );
+
+
+    musicAudio.addEventListener(
+        "ended",
+        () => {
+
+            nextSong();
+        }
+    );
+}
