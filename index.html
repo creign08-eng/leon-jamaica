@@ -166,6 +166,12 @@
                 💌
                 <span>Messages</span>
             </button>
+            
+<button class="nav-button" data-section="settingsSection" type="button">
+    <span aria-hidden="true">⚙️</span>
+    <span>Settings</span>
+</button>
+
 
         </nav>
 
@@ -480,7 +486,6 @@
 
                 </div>
 
-
                 <div
                     id="messageList"
                     class="message-list">
@@ -490,6 +495,172 @@
                         <p>No messages yet.</p>
                     </div>
 
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- SETTINGS -->
+            <!-- ============================= -->
+
+            <section
+                id="settingsSection"
+                class="page-section">
+
+                <div class="section-heading">
+                    <div>
+                        <span class="section-label">
+                            MADE FOR US
+                        </span>
+
+                        <h2>Our Website Settings</h2>
+
+                        <p>
+                            Make this little corner of our love feel like us.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+
+                    <div class="settings-card">
+                        <h3>✨ Appearance</h3>
+
+                        <label for="siteTheme">Website theme</label>
+                        <select id="siteTheme">
+                            <option value="romantic">Romantic Rose</option>
+                            <option value="midnight">Midnight</option>
+                            <option value="light">Soft Light</option>
+                        </select>
+
+                        <label for="galleryLayout">Gallery layout</label>
+                        <select id="galleryLayout">
+                            <option value="grid">Grid</option>
+                            <option value="large">Large photos</option>
+                            <option value="compact">Compact grid</option>
+                        </select>
+
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="animationsEnabled" checked>
+                            <span>Enable animations and effects</span>
+                        </label>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>💗 Home Page Message</h3>
+
+                        <label for="homeMessage">Home page message</label>
+                        <textarea id="homeMessage" rows="4">Every picture, every song, every message — a piece of us.</textarea>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>🖼️ Hero Background</h3>
+
+                        <label for="heroPhotoSource">Photo source</label>
+                        <select id="heroPhotoSource">
+                            <option value="gallery">Choose from gallery</option>
+                            <option value="upload">Upload a new photo</option>
+                        </select>
+
+                        <div id="heroGalleryPickerWrap">
+                            <label for="heroGalleryPhoto">Gallery photo</label>
+                            <select id="heroGalleryPhoto">
+                                <option value="">Load gallery photos first</option>
+                            </select>
+                        </div>
+
+                        <div id="heroUploadWrap" hidden>
+                            <label for="heroPhotoUpload">Upload a new photo</label>
+                            <input type="file" id="heroPhotoUpload" accept="image/*">
+                        </div>
+
+                        <label for="heroBrightness">Brightness</label>
+                        <input type="range" id="heroBrightness" min="30" max="120" value="75">
+
+                        <label for="heroPosition">Photo position</label>
+                        <select id="heroPosition">
+                            <option value="center">Center</option>
+                            <option value="top">Top</option>
+                            <option value="bottom">Bottom</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                        </select>
+
+                        <div id="heroPreview" class="hero-preview">
+                            <span>Hero background preview</span>
+                        </div>
+
+                        <div class="settings-actions">
+                            <button type="button" id="previewHeroButton">Preview</button>
+                            <button type="button" id="resetHeroButton">Reset to default</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>🎵 Music Player</h3>
+
+                        <label for="musicPlayerStyle">Player layout</label>
+                        <select id="musicPlayerStyle">
+                            <option value="classic">Classic</option>
+                            <option value="compact">Compact</option>
+                            <option value="artwork">Large artwork</option>
+                        </select>
+
+                        <label for="musicPlayerBackground">Player background</label>
+                        <select id="musicPlayerBackground">
+                            <option value="default">Default</option>
+                            <option value="rose">Rose</option>
+                            <option value="midnight">Midnight</option>
+                        </select>
+
+                        <label for="musicArtworkUrl">Artwork image URL (optional)</label>
+                        <input type="url" id="musicArtworkUrl" placeholder="https://example.com/artwork.jpg">
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>🔒 Privacy</h3>
+
+                        <p class="settings-note">
+                            These preferences do not replace Supabase security policies.
+                        </p>
+
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="confirmBeforeDelete" checked>
+                            <span>Ask before deleting items</span>
+                        </label>
+
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="privateMessages" checked>
+                            <span>Keep messages visible only after login</span>
+                        </label>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>💾 Backup &amp; Restore</h3>
+
+                        <p>Export or restore your website settings.</p>
+
+                        <div class="settings-actions">
+                            <button type="button" id="exportSettingsButton">Export settings</button>
+                            <button type="button" id="importSettingsButton">Import settings</button>
+                        </div>
+
+                        <input type="file" id="importSettingsFile" accept=".json,application/json" hidden>
+
+                        <p class="settings-note">
+                            This backs up settings only, not your photos, videos, or music.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="settings-save-row">
+                    <button type="button" id="saveSettingsButton">Save Settings</button>
+
+                    <p id="settingsStatus" role="status" aria-live="polite">
+                        Your changes have not been saved yet.
+                    </p>
                 </div>
 
             </section>
