@@ -3128,3 +3128,237 @@ async function confirmDeleteMedia(item) {
         await loadAllMemories();
     }
 }
+
+/* =========================================
+   LEON & MAJICA SETTINGS — PART 1
+   ========================================= */
+
+const SETTINGS_DEFAULTS = {
+    siteTheme: "romantic",
+    galleryLayout: "grid",
+    animationsEnabled: true,
+    homeMessage:
+        "Every picture, every song, every message — a piece of us.",
+    heroPhotoSource: "gallery",
+    heroGalleryPhoto: "",
+    heroBrightness: 75,
+    heroPosition: "center",
+    musicPlayerStyle: "classic",
+    musicPlayerBackground: "default",
+    musicArtworkUrl: "",
+    confirmBeforeDelete: true,
+    privateMessages: true
+};
+
+function getSettingsFormData() {
+    const value = id =>
+        document.getElementById(id);
+
+    return {
+        siteTheme: value("siteTheme")?.value || "romantic",
+        galleryLayout: value("galleryLayout")?.value || "grid",
+        animationsEnabled: value("animationsEnabled")?.checked ?? true,
+        homeMessage: value("homeMessage")?.value || "",
+        heroPhotoSource: value("heroPhotoSource")?.value || "gallery",
+        heroGalleryPhoto: value("heroGalleryPhoto")?.value || "",
+        heroBrightness: Number(value("heroBrightness")?.value || 75),
+        heroPosition: value("heroPosition")?.value || "center",
+        musicPlayerStyle: value("musicPlayerStyle")?.value || "classic",
+        musicPlayerBackground:
+            value("musicPlayerBackground")?.value || "default",
+        musicArtworkUrl: value("musicArtworkUrl")?.value || "",
+        confirmBeforeDelete:
+            value("confirmBeforeDelete")?.checked ?? true,
+        privateMessages: value("privateMessages")?.checked ?? true
+    };
+}
+
+function fillSettingsForm(settings = {}) {
+    const data = {
+        ...SETTINGS_DEFAULTS,
+        ...settings
+    };
+
+    const setValue = (id, val) => {
+        const element = document.getElementById(id);
+        if (element) element.value = val;
+    };
+
+    const setChecked = (id, val) => {
+        const element = document.getElementById(id);
+        if (element) element.checked = Boolean(val);
+    };
+
+    setValue("siteTheme", data.siteTheme);
+    setValue("galleryLayout", data.galleryLayout);
+    setChecked("animationsEnabled", data.animationsEnabled);
+    setValue("homeMessage", data.homeMessage);
+    setValue("heroPhotoSource", data.heroPhotoSource);
+    setValue("heroGalleryPhoto", data.heroGalleryPhoto);
+    setValue("heroBrightness", data.heroBrightness);
+    setValue("heroPosition", data.heroPosition);
+    setValue("musicPlayerStyle", data.musicPlayerStyle);
+    setValue("musicPlayerBackground", data.musicPlayerBackground);
+    setValue("musicArtworkUrl", data.musicArtworkUrl);
+    setChecked("confirmBeforeDelete", data.confirmBeforeDelete);
+    setChecked("privateMessages", data.privateMessages);
+
+    updateHeroSourceControls();
+    updateHeroPreview();
+}
+
+function updateHeroSourceControls() {
+    const source =
+        document.getElementById("heroPhotoSource")?.value;
+
+    const galleryWrap =
+        document.getElementById("heroGalleryPickerWrap");
+
+    const uploadWrap =
+        document.getElementById("heroUploadWrap");
+
+    if (galleryWrap) {
+        galleryWrap.hidden = source !== "gallery";
+    }
+
+    if (uploadWrap) {
+        uploadWrap.hidden = source !== "upload";
+    }
+}
+
+function updateHeroPreview() {
+    const preview =
+        document.getElementById("heroPreview");
+
+    const brightness =
+        Number(document.getElementById("heroBrightness")?.value || 75);
+
+    const position =
+        document.getElementById("heroPosition")?.value || "center";
+
+    if (!preview) return;
+
+    preview.style.filter = `brightness(${brightness}%)`;
+    preview.style.backgroundPosition = position;
+}
+
+function setSettingsStatus(message) {
+    const status =
+        document.getElementById("settingsStatus");
+
+    if (status) status.textContent = message;
+}
+
+function exportSettings() {
+    const data = getSettingsFormData();
+
+    const blob = new Blob(
+        [JSON.stringify(data, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "leon-majica-settings.json";
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+    setSettingsStatus("Settings file exported.");
+}
+
+function importSettingsFile(file) {
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+        try {
+            const data = JSON.parse(reader.result);
+
+            if (!data || typeof data !== "object" || Array.isArray(data)) {
+                throw new Error("Invalid settings file.");
+            }
+
+            fillSettingsForm(data);
+            setSettingsStatus(
+                "Settings imported. Press Save Settings when saving is connected."
+            );
+        } catch (error) {
+            console.error("Settings import error:", error);
+            setSettingsStatus("Could not read that settings file.");
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+function initializeSettingsControls() {
+    const source =
+        document.getElementById("heroPhotoSource");
+
+    source?.addEventListener(
+        "change",
+        updateHeroSourceControls
+    );
+
+    document.getElementById("heroBrightness")
+        ?.addEventListener("input", updateHeroPreview);
+
+    document.getElementById("heroPosition")
+        ?.addEventListener("change", updateHeroPreview);
+
+    document.getElementById("previewHeroButton")
+        ?.addEventListener("click", updateHeroPreview);
+
+    document.getElementById("resetHeroButton")
+        ?.addEventListener("click", () => {
+            const brightness =
+                document.getElementById("heroBrightness");
+
+            const position =
+                document.getElementById("heroPosition");
+
+            const sourceSelect =
+                document.getElementById("heroPhotoSource");
+
+            const galleryPhoto =
+                document.getElementById("heroGalleryPhoto");
+
+            if (brightness) brightness.value = 75;
+            if (position) position.value = "center";
+            if (sourceSelect) sourceSelect.value = "gallery";
+            if (galleryPhoto) galleryPhoto.value = "";
+
+            const preview =
+                document.getElementById("heroPreview");
+
+            if (preview) {
+                preview.style.backgroundImage = "";
+                preview.style.filter = "";
+                preview.style.backgroundPosition = "center";
+            }
+
+            updateHeroSourceControls();
+            updateHeroPreview();
+            setSettingsStatus("Hero preview reset. Save to keep your settings.");
+        });
+
+    document.getElementById("exportSettingsButton")
+        ?.addEventListener("click", exportSettings);
+
+    document.getElementById("importSettingsButton")
+        ?.addEventListener("click", () => {
+            document.getElementById("importSettingsFile")?.click();
+        });
+
+    document.getElementById("importSettingsFile")
+        ?.addEventListener("change", event => {
+            importSettingsFile(event.target.files?.[0]);
+            event.target.value = "";
+        });
+
+    fillSettingsForm();
+}
