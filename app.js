@@ -3865,46 +3865,151 @@ function initializeSiteBackgroundSettings() {
         ?.addEventListener("input", updateSiteBackgroundPreview);
 
     document.getElementById("previewSiteBackgroundButton")
-        ?.addEventListener("click", () => {
+        ?.addEventListener("click", async () => {
+
             updateSiteBackgroundPreview();
 
             const source =
                 document.getElementById("siteBackgroundSource")?.value;
 
+            const brightness =
+                Number(
+                    document.getElementById("siteBackgroundBrightness")?.value || 45
+                );
+
             let imageUrl = "";
+            let backgroundPath = "";
 
-            if (source === "upload") {
-                imageUrl = window._siteBackgroundPreviewUrl || "";
-            } else {
-                imageUrl =
-                    document.getElementById("siteBackgroundPhoto")
-                        ?.selectedOptions?.[0]?.dataset?.imageUrl || "";
+            try {
+
+                /*
+                 * GALLERY PHOTO
+                 */
+                if (source === "gallery") {
+
+                    const photoSelect =
+                        document.getElementById("siteBackgroundPhoto");
+
+                    backgroundPath =
+                        photoSelect?.value || "";
+
+                    imageUrl =
+                        photoSelect
+                            ?.selectedOptions?.[0]
+                            ?.dataset?.imageUrl || "";
+
+                    if (!backgroundPath || !imageUrl) {
+                        setSettingsStatus(
+                            "Choose a website background photo first."
+                        );
+                        return;
+                    }
+                }
+
+                /*
+                 * NEW UPLOAD
+                 */
+                else if (source === "upload") {
+
+                    const uploadInput =
+                        document.getElementById("siteBackgroundUpload");
+
+                    const file =
+                        uploadInput?.files?.[0];
+
+                    if (!file) {
+                        setSettingsStatus(
+                            "Choose a photo to upload first."
+                        );
+                        return;
+                    }
+
+                    setSettingsStatus(
+                        "Uploading website background..."
+                    );
+
+                    const record =
+                        await uploadMediaFile(
+                            file,
+                            "photo"
+                        );
+
+                    if (!record?.file_path) {
+                        throw new Error(
+                            "Background upload did not return a file path."
+                        );
+                    }
+
+                    backgroundPath =
+                        record.file_path;
+
+                    imageUrl =
+                        await getSignedUrl(
+                            backgroundPath
+                        );
+
+                    if (!imageUrl) {
+                        throw new Error(
+                            "Could not create a signed URL for the background."
+                        );
+                    }
+                }
+
+                /*
+                 * SAVE SETTINGS
+                 */
+                await saveSiteBackgroundSettings(
+                    backgroundPath,
+                    source,
+                    brightness
+                );
+
+                /*
+                 * APPLY BACKGROUND
+                 */
+                const darkness =
+                    1 - brightness / 100;
+
+                document.body.style.backgroundImage =
+                    `linear-gradient(
+                        rgba(0,0,0,${darkness}),
+                        rgba(0,0,0,${darkness})
+                    ), url("${imageUrl}")`;
+
+                document.body.style.backgroundSize =
+                    "cover";
+
+                document.body.style.backgroundPosition =
+                    "center";
+
+                document.body.style.backgroundAttachment =
+                    "fixed";
+
+                document.body.style.backgroundRepeat =
+                    "no-repeat";
+
+                setSettingsStatus(
+                    "Website background saved successfully."
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Website background save error:",
+                    error
+                );
+
+                setSettingsStatus(
+                    "Could not save website background: " +
+                    (error?.message || "Unknown error.")
+                );
             }
 
-            if (!imageUrl) {
-                setSettingsStatus("Choose a website background photo first.");
-                return;
-            }
-
-            const brightness = Number(
-                document.getElementById("siteBackgroundBrightness")?.value || 45
-            );
-
-            document.body.style.backgroundImage =
-                `linear-gradient(rgba(0,0,0,${1 - brightness / 100}), rgba(0,0,0,${1 - brightness / 100})), url("${imageUrl}")`;
-
-            document.body.style.backgroundSize = "cover";
-            document.body.style.backgroundPosition = "center";
-            document.body.style.backgroundAttachment = "fixed";
-            document.body.style.backgroundRepeat = "no-repeat";
-
-            setSettingsStatus(
-                "Website background preview applied. Saving across devices is not connected yet."
-            );
         });
 
     document.getElementById("resetSiteBackgroundButton")
         ?.addEventListener("click", () => {
+
             const source =
                 document.getElementById("siteBackgroundSource");
 
@@ -3929,7 +4034,10 @@ function initializeSiteBackgroundSettings() {
             document.body.style.backgroundRepeat = "";
 
             updateSiteBackgroundSource();
-            setSettingsStatus("Website background reset for this page.");
+
+            setSettingsStatus(
+                "Website background reset for this page."
+            );
         });
 
     loadSiteBackgroundGallery();
