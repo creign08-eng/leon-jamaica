@@ -2559,6 +2559,59 @@ async function playSong(index) {
         .textContent =
         song.title ||
         "Song";
+        // PHONE / LOCK-SCREEN MEDIA CONTROLS
+
+    if ("mediaSession" in navigator) {
+
+        navigator.mediaSession.metadata =
+            new MediaMetadata({
+                title: song.title || "Song",
+                artist: "Leon & Majica",
+                album: "Our Soundtrack"
+            });
+
+        navigator.mediaSession.setActionHandler(
+            "play",
+            () => {
+                const player =
+                    document.getElementById(
+                        "audioPlayer"
+                    );
+
+                if (player) {
+                    player.play();
+                }
+            }
+        );
+
+        navigator.mediaSession.setActionHandler(
+            "pause",
+            () => {
+                const player =
+                    document.getElementById(
+                        "audioPlayer"
+                    );
+
+                if (player) {
+                    player.pause();
+                }
+            }
+        );
+
+        navigator.mediaSession.setActionHandler(
+            "previoustrack",
+            () => {
+                previousSong();
+            }
+        );
+
+        navigator.mediaSession.setActionHandler(
+            "nexttrack",
+            () => {
+                nextSong();
+            }
+        );
+    }
 
     document
         .getElementById(
