@@ -1151,6 +1151,8 @@ async function initializeApp() {
     initializeSettingsControls();
    
     initializeMusicBackgroundSettings();
+   
+    loadHeroGalleryPhotos();
 
 
     const messageButton =
@@ -3543,4 +3545,46 @@ function initializeMusicBackgroundSettings() {
         });
 
     loadMusicGalleryPhotos();
+}
+
+/* =========================================
+   LOAD PHOTOS FOR HERO BACKGROUND
+   ========================================= */
+
+async function loadHeroGalleryPhotos() {
+    const select = document.getElementById("heroGalleryPhoto");
+    if (!select) return;
+
+    try {
+        const records = await getMediaRecords();
+
+        select.innerHTML = "";
+        select.add(new Option("Choose a photo...", ""));
+
+        const photos = (records || []).filter(item =>
+            item.file_type === "photo" ||
+            item.file_type === "image" ||
+            (item.mime_type || "").startsWith("image/")
+        );
+
+        for (const photo of photos) {
+            const url = await getSignedUrl(photo.file_path);
+            if (!url) continue;
+
+            const option = new Option(
+                photo.file_name || "Gallery photo",
+                photo.file_path
+            );
+
+            option.dataset.imageUrl = url;
+            select.add(option);
+        }
+
+        updateHeroPreview();
+
+    } catch (error) {
+        console.error("Hero gallery loading error:", error);
+        select.innerHTML = "";
+        select.add(new Option("Could not load photos", ""));
+    }
 }
