@@ -1821,26 +1821,25 @@ function createMusicItem(item, index) {
 /* =========================================
    LOAD PHOTOS
    ========================================= */
-
+ 
 async function loadPhotos(records) {
-    const grid = document.getElementById("photosGrid");
-
+    const grid = $("photoGrid");
     if (!grid) {
+        console.error("Photo gallery element #photoGrid not found.");
         return;
     }
 
     grid.innerHTML = "";
 
-    const photos = (records || []).filter(item =>
-        item.file_type === "photo" ||
-        item.file_type === "image" ||
-        (item.mime_type || "").startsWith("image/")
+    const photos = (records || []).filter(
+        item => item.file_type === "photo"
     );
 
     if (photos.length === 0) {
         grid.innerHTML = `
             <div class="empty-state">
-                <p>No photos yet ❤️</p>
+                <div>📸</div>
+                <p>No photos yet.</p>
             </div>
         `;
         return;
@@ -1848,26 +1847,21 @@ async function loadPhotos(records) {
 
     for (const item of photos) {
         try {
-            const signedUrl = await getSignedUrl(item.file_path);
+            const url = await getSignedUrl(item.file_path);
 
-            if (!signedUrl) {
-                console.error("Could not create photo URL:", item);
+            if (!url) {
+                console.error("Photo URL unavailable:", item.file_path);
                 continue;
             }
 
-            const photoWithUrl = {
+            const card = createPhotoCard({
                 ...item,
-                signed_url: signedUrl
-            };
+                signed_url: url
+            });
 
-            const card = createPhotoCard(photoWithUrl);
-
-            if (card) {
-                grid.insertAdjacentHTML("beforeend", card);
-            }
-
+            grid.insertAdjacentHTML("beforeend", card);
         } catch (error) {
-            console.error("Error loading photo:", item, error);
+            console.error("Photo display error:", error);
         }
     }
 }
@@ -1875,24 +1869,25 @@ async function loadPhotos(records) {
 /* =========================================
    LOAD VIDEOS
    ========================================= */
-async function loadVideos(records) {
-    const grid = document.getElementById("videosGrid");
 
+async function loadVideos(records) {
+    const grid = $("videoGrid");
     if (!grid) {
+        console.error("Video gallery element #videoGrid not found.");
         return;
     }
 
     grid.innerHTML = "";
 
-    const videos = (records || []).filter(item =>
-        item.file_type === "video" ||
-        (item.mime_type || "").startsWith("video/")
+    const videos = (records || []).filter(
+        item => item.file_type === "video"
     );
 
     if (videos.length === 0) {
         grid.innerHTML = `
             <div class="empty-state">
-                <p>No videos yet 🎥</p>
+                <div>🎥</div>
+                <p>No videos yet.</p>
             </div>
         `;
         return;
@@ -1900,26 +1895,21 @@ async function loadVideos(records) {
 
     for (const item of videos) {
         try {
-            const signedUrl = await getSignedUrl(item.file_path);
+            const url = await getSignedUrl(item.file_path);
 
-            if (!signedUrl) {
-                console.error("Could not create video URL:", item);
+            if (!url) {
+                console.error("Video URL unavailable:", item.file_path);
                 continue;
             }
 
-            const videoWithUrl = {
+            const card = createVideoCard({
                 ...item,
-                signed_url: signedUrl
-            };
+                signed_url: url
+            });
 
-            const card = createVideoCard(videoWithUrl);
-
-            if (card) {
-                grid.insertAdjacentHTML("beforeend", card);
-            }
-
+            grid.insertAdjacentHTML("beforeend", card);
         } catch (error) {
-            console.error("Error loading video:", item, error);
+            console.error("Video display error:", error);
         }
     }
 }
