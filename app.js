@@ -1822,157 +1822,106 @@ function createMusicItem(item, index) {
    LOAD PHOTOS
    ========================================= */
 
-async function loadPhotos(
-    records
-) {
-
-    const grid =
-        $("photoGrid");
-
+async function loadPhotos(records) {
+    const grid = document.getElementById("photosGrid");
 
     if (!grid) {
         return;
     }
 
-
     grid.innerHTML = "";
 
-
-    const photos =
-        records.filter(
-            function (item) {
-
-                return item.file_type === "photo";
-
-            }
-        );
-
+    const photos = (records || []).filter(item =>
+        item.file_type === "photo" ||
+        item.file_type === "image" ||
+        (item.mime_type || "").startsWith("image/")
+    );
 
     if (photos.length === 0) {
-
         grid.innerHTML = `
             <div class="empty-state">
-                <div>📸</div>
-                <p>No photos yet.</p>
+                <p>No photos yet ❤️</p>
             </div>
         `;
-
         return;
-
     }
 
-
-    for (
-        const item of photos
-    ) {
-
+    for (const item of photos) {
         try {
+            const signedUrl = await getSignedUrl(item.file_path);
 
-            const card =
-                await createPhotoCard(
-                    item
-                );
+            if (!signedUrl) {
+                console.error("Could not create photo URL:", item);
+                continue;
+            }
 
+            const photoWithUrl = {
+                ...item,
+                signed_url: signedUrl
+            };
+
+            const card = createPhotoCard(photoWithUrl);
 
             if (card) {
-
-                grid.insertAdjacentHTML(
-    "beforeend",
-    card
-);
-
+                grid.insertAdjacentHTML("beforeend", card);
             }
 
         } catch (error) {
-
-            console.error(
-                "Photo error:",
-                error
-            );
-
+            console.error("Error loading photo:", item, error);
         }
-
     }
-
 }
-
 
 /* =========================================
    LOAD VIDEOS
    ========================================= */
-
-async function loadVideos(
-    records
-) {
-
-    const grid =
-        $("videoGrid");
-
+async function loadVideos(records) {
+    const grid = document.getElementById("videosGrid");
 
     if (!grid) {
         return;
     }
 
-
     grid.innerHTML = "";
 
-
-    const videos =
-        records.filter(
-            function (item) {
-
-                return item.file_type === "video";
-
-            }
-        );
-
+    const videos = (records || []).filter(item =>
+        item.file_type === "video" ||
+        (item.mime_type || "").startsWith("video/")
+    );
 
     if (videos.length === 0) {
-
         grid.innerHTML = `
             <div class="empty-state">
-                <div>🎥</div>
-                <p>No videos yet.</p>
+                <p>No videos yet 🎥</p>
             </div>
         `;
-
         return;
-
     }
 
-
-    for (
-        const item of videos
-    ) {
-
+    for (const item of videos) {
         try {
+            const signedUrl = await getSignedUrl(item.file_path);
 
-            const card =
-                await createVideoCard(
-                    item
-                );
+            if (!signedUrl) {
+                console.error("Could not create video URL:", item);
+                continue;
+            }
 
+            const videoWithUrl = {
+                ...item,
+                signed_url: signedUrl
+            };
+
+            const card = createVideoCard(videoWithUrl);
 
             if (card) {
-
-                grid.insertAdjacentHTML(
-    "beforeend",
-    card
-);
-
+                grid.insertAdjacentHTML("beforeend", card);
             }
 
         } catch (error) {
-
-            console.error(
-                "Video error:",
-                error
-            );
-
+            console.error("Error loading video:", item, error);
         }
-
     }
-
 }
 
 
