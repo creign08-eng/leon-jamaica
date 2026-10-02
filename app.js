@@ -4432,3 +4432,70 @@ async function openSoundtrack() {
         songList.appendChild(row);
     }
 }
+function minimizeMusicPlayer() {
+
+    const controls =
+        document.getElementById(
+            "musicPlayerControls"
+        );
+
+    const player =
+        document.getElementById(
+            "musicPlayer"
+        );
+
+    if (!controls || !player) {
+        return;
+    }
+
+    controls.classList.add("hidden");
+
+    player.classList.add(
+        "music-player-minimized"
+    );
+}
+
+
+function closeMusicPlayer() {
+
+    const player =
+        document.getElementById(
+            "musicPlayer"
+        );
+
+    const audio =
+        document.getElementById(
+            "audioPlayer"
+        );
+
+    if (audio) {
+
+        audio.pause();
+
+        audio.currentTime = 0;
+
+        audio.removeAttribute("src");
+
+        audio.load();
+    }
+
+    if (player) {
+
+        player.classList.add(
+            "hidden"
+        );
+
+        player.classList.remove(
+            "music-player-minimized"
+        );
+    }
+
+    const button =
+        document.getElementById(
+            "playPauseButton"
+        );
+
+    if (button) {
+        button.textContent = "▶";
+    }
+}
