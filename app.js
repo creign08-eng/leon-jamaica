@@ -4337,3 +4337,98 @@ async function addMemoryToAlbum(memoryId) {
         `Added to "${album.name}" ❤️`
     );
 }
+async function openSoundtrack() {
+
+    const { data: songs, error } =
+        await supabaseClient
+            .from("memories")
+            .select("*")
+            .eq("media_type", "music")
+            .order("created_at", {
+                ascending: true
+            });
+
+    if (error) {
+        alert(error.message);
+        return;
+    }
+
+    currentPlaylist = songs || [];
+    currentSongIndex = 0;
+
+    document
+        .getElementById("playlistGallery")
+        .classList.add("hidden");
+
+    const viewer =
+        document.getElementById(
+            "playlistViewer"
+        );
+
+    if (!viewer) {
+        return;
+    }
+
+    viewer.classList.remove("hidden");
+
+    document
+        .getElementById(
+            "playlistViewerTitle"
+        )
+        .textContent =
+        "🎵 Soundtrack";
+
+    const songList =
+        document.getElementById(
+            "playlistSongs"
+        );
+
+    songList.innerHTML = "";
+
+    if (!songs || songs.length === 0) {
+
+        songList.innerHTML =
+            "<p>Your Soundtrack is empty.</p>";
+
+        return;
+    }
+
+    for (
+        let i = 0;
+        i < songs.length;
+        i++
+    ) {
+
+        const song = songs[i];
+
+        const row =
+            document.createElement("div");
+
+        row.className = "card";
+
+        row.style.padding = "15px";
+        row.style.marginBottom = "10px";
+
+        row.innerHTML = `
+            <strong>
+                ${escapeHtml(
+                    song.title || "Song"
+                )}
+            </strong>
+
+            <button
+                onclick="playSong(${i})"
+            >
+                ▶ Play
+            </button>
+
+            <button
+                onclick="addMemoryToPlaylist('${song.id}')"
+            >
+                ➕ Add to Playlist
+            </button>
+        `;
+
+        songList.appendChild(row);
+    }
+}
