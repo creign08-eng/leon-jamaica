@@ -1,1209 +1,695 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Leon & Majica ❤️</title>
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+    <link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
+    <!-- ============================= -->
+    <!-- LOGIN SCREEN -->
+    <!-- ============================= -->
 
-<!-- LOGIN -->
+    <section id="loginScreen" class="login-screen">
 
-<div id="loginPage" class="login-page">
+        <div class="login-box">
 
-    <div class="login-box">
+            <div class="login-heart">❤️</div>
 
-        <div class="logo-heart">
-            ❤️
+            <h1>Leon & Majica</h1>
+
+            <p class="login-subtitle">
+                Our Private Memories
+            </p>
+
+            <form id="loginForm">
+
+                <div class="input-group">
+                    <label for="username">Username</label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        autocomplete="username"
+                        placeholder="Enter username"
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        autocomplete="current-password"
+                        placeholder="Enter password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-button">
+                    Enter Our Memories ❤️
+                </button>
+
+                <p id="loginError" class="login-error"></p>
+
+            </form>
+
         </div>
 
-        <h1>
-            Leon & Majica
-        </h1>
-
-        <p>
-            Our Private Memories
-        </p>
-
-        <input
-            id="loginUsername"
-            type="text"
-            placeholder="Username"
-        >
-
-        <input
-            id="loginPassword"
-            type="password"
-            placeholder="Password"
-        >
-
-        <button onclick="login()">
-            Enter Our Memories
-        </button>
-
-        <p
-            id="loginError"
-            class="error"
-        ></p>
-
-    </div>
-
-</div>
+    </section>
 
 
+    <!-- ============================= -->
+    <!-- MAIN WEBSITE -->
+    <!-- ============================= -->
 
-<!-- WEBSITE -->
+    <div id="app" class="app hidden">
 
-<div
-    id="website"
-    class="hidden"
->
+        <!-- HEADER -->
 
+        <header class="top-header">
 
-    <!-- TOP BAR -->
+            <div class="brand">
+                <span class="brand-heart">❤️</span>
 
-    <header class="topbar">
-
-        <div class="brand">
-            ❤️ Leon & Majica
-        </div>
-
-
-        <nav>
+                <div>
+                    <h1>Leon & Majica</h1>
+                    <span>Our Little Forever</span>
+                </div>
+            </div>
 
             <button
-                onclick="showSection('homeSection')"
-            >
-                Home
+                id="logoutButton"
+                class="header-button"
+                type="button">
+                Logout
             </button>
 
+        </header>
+
+
+        <!-- ============================= -->
+        <!-- HERO -->
+        <!-- ============================= -->
+
+        <section class="hero-section">
+
+            <div class="hero-overlay">
+
+                <div class="hero-content">
+
+                    <span class="hero-small">
+                        OUR STORY
+                    </span>
+
+                    <h2>
+                        Leon <span>&</span> Majica
+                    </h2>
+
+                    <p>
+                        Every picture, every song,
+                        every message — a piece of us.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ============================= -->
+        <!-- NAVIGATION -->
+        <!-- ============================= -->
+
+        <nav class="main-navigation">
 
             <button
-                onclick="showSection('albumsSection')"
-            >
-                📸 Albums
+                class="nav-button active"
+                data-section="homeSection">
+                🏠
+                <span>Home</span>
             </button>
 
-
             <button
-                onclick="showSection('videosSection')"
-            >
-                🎬 Videos
+                class="nav-button"
+                data-section="photosSection">
+                📸
+                <span>Photos</span>
             </button>
 
-
             <button
-                onclick="showSection('playlistsSection')"
-            >
-                🎵 Music
+                class="nav-button"
+                data-section="videosSection">
+                🎥
+                <span>Videos</span>
             </button>
 
-
             <button
-                onclick="showSection('favoritesSection')"
-            >
-                ❤️ Favorites
+                class="nav-button"
+                data-section="musicSection">
+                🎵
+                <span>Music</span>
             </button>
 
-
             <button
-                onclick="showSection('messagesSection')"
-            >
-                💌 Messages
-            </button>
-
-
-            <button
-                onclick="showSection('uploadSection')"
-            >
-                ➕ Add
-            </button>
-
-
-            <button
-                onclick="showSection('settingsSection')"
-            >
-                ⚙️ Settings
+                class="nav-button"
+                data-section="messagesSection">
+                💌
+                <span>Messages</span>
             </button>
 
         </nav>
 
 
-        <button
-            onclick="logout()"
-            class="logout"
-        >
-            Logout
-        </button>
-
-    </header>
-
-
-
-    <main>
-
-
+        <!-- ============================= -->
         <!-- HOME -->
+        <!-- ============================= -->
 
-<section
-    id="homeSection"
-    class="section"
->
+        <main class="content-container">
 
-    <!-- LEON & MAJICA HERO -->
+            <section
+                id="homeSection"
+                class="page-section active-section">
 
-    <div
-        class="love-hero"
-        id="loveHero"
-    >
+                <div class="section-heading">
 
-        <div class="love-hero-overlay">
+                    <div>
+                        <span class="section-label">
+                            WELCOME HOME
+                        </span>
 
-            <p class="love-hero-label">
-                OUR STORY
-            </p>
+                        <h2>Our Memories</h2>
 
-            <h1>
-                Leon & Majica ❤️
-            </h1>
-
-            <p class="love-hero-text">
-                Every photo. Every video. Every song.
-                Our memories, together in one place.
-            </p>
-
-            <div class="love-hero-buttons">
-
-                <button
-                    onclick="showSection('albumsSection')"
-                >
-                    ▶ Explore Memories
-                </button>
-
-                <button
-                    onclick="showSection('favoritesSection')"
-                >
-                    ❤️ Our Favorites
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <h2>
-        Recently Added
-    </h2>
-
-    <div
-        id="recentMemories"
-        class="grid"
-    ></div>
-
-</section>>
-
-
-
-        <!-- ALBUMS -->
-
-        <section
-            id="albumsSection"
-            class="section hidden"
-        >
-
-            <div class="section-title">
-
-                <div>
-
-                    <p>
-                        PHOTO COLLECTIONS
-                    </p>
-
-                    <h2>
-                        Our Albums 📸
-                    </h2>
+                        <p>
+                            A private place for everything
+                            that means something to us.
+                        </p>
+                    </div>
 
                 </div>
 
 
-                <button
-                    onclick="openAlbumManager()"
-                >
-                    + New Album
-                </button>
+                <!-- MEMORY STATS -->
 
-            </div>
+                <div class="memory-stats">
+
+                    <div class="stat-card">
+                        <span class="stat-icon">📸</span>
+                        <strong id="photoCount">0</strong>
+                        <span>Photos</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <span class="stat-icon">🎥</span>
+                        <strong id="videoCount">0</strong>
+                        <span>Videos</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <span class="stat-icon">🎵</span>
+                        <strong id="musicCount">0</strong>
+                        <span>Songs</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <span class="stat-icon">💌</span>
+                        <strong id="messageCount">0</strong>
+                        <span>Messages</span>
+                    </div>
+
+                </div>
 
 
-            <div
-                id="albumGallery"
-                class="grid"
-            ></div>
+                <!-- RECENT MEMORIES -->
+
+                <div class="content-card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <span class="section-label">
+                                MEMORIES
+                            </span>
+
+                            <h3>Recently Added</h3>
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="recentMemories"
+                        class="recent-memories">
+
+                        <div class="empty-state">
+                            <div>❤️</div>
+
+                            <p>
+                                Your memories will appear here.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
 
 
-            <div
-                id="albumViewer"
-                class="hidden"
-            >
+            <!-- ============================= -->
+            <!-- PHOTOS -->
+            <!-- ============================= -->
 
-                <button
-                    onclick="closeAlbum()"
-                >
-                    ← Back
-                </button>
+            <section
+                id="photosSection"
+                class="page-section">
 
+                <div class="section-heading">
 
-                <h2
-                    id="albumViewerTitle"
-                ></h2>
+                    <div>
+                        <span class="section-label">
+                            OUR MOMENTS
+                        </span>
+
+                        <h2>Photos</h2>
+
+                        <p>
+                            The moments we never want to forget.
+                        </p>
+                    </div>
+
+                    <button
+                        id="uploadPhotoButton"
+                        class="primary-button"
+                        type="button">
+                        ＋ Add Photo
+                    </button>
+
+                </div>
 
 
                 <div
-                    id="albumMemoryGallery"
-                    class="grid"
-                ></div>
+                    id="photoGrid"
+                    class="media-grid">
 
-            </div>
-
-        </section>
-
-
-
-        <!-- VIDEOS -->
-
-        <section
-            id="videosSection"
-            class="section hidden"
-        >
-
-            <div class="section-title">
-
-                <div>
-
-                    <p>
-                        VIDEO COLLECTIONS
-                    </p>
-
-                    <h2>
-                        Our Videos 🎬
-                    </h2>
+                    <div class="empty-state">
+                        <div>📸</div>
+                        <p>No photos yet.</p>
+                    </div>
 
                 </div>
 
-
-                <button
-                    onclick="openVideoFolderManager()"
-                >
-                    + New Folder
-                </button>
-
-            </div>
+            </section>
 
 
-            <div
-                id="videoGallery"
-                class="grid"
-            ></div>
+            <!-- ============================= -->
+            <!-- VIDEOS -->
+            <!-- ============================= -->
 
-        </section>
+            <section
+                id="videosSection"
+                class="page-section">
 
+                <div class="section-heading">
 
+                    <div>
+                        <span class="section-label">
+                            OUR VIDEOS
+                        </span>
 
-        <!-- MUSIC -->
+                        <h2>Videos</h2>
 
-        <section
-            id="playlistsSection"
-            class="section hidden"
-        >
-            
-<!-- LEON & MAJICA MUSIC PLAYER -->
+                        <p>
+                            Little pieces of our story in motion.
+                        </p>
+                    </div>
 
-<div id="spotifyPlayer" class="spotify-player">
-
-    <div class="spotify-artwork" id="spotifyArtwork">
-        <span>🎵</span>
-    </div>
-
-    <div class="spotify-details">
-        <p class="spotify-label">NOW PLAYING</p>
-
-        <h2 id="spotifySongTitle">
-            Choose a song ❤️
-        </h2>
-
-        <p id="spotifySongSubtitle">
-            Leon & Majica Playlist
-        </p>
-
-        <audio
-            id="spotifyAudio"
-            preload="metadata"
-        ></audio>
-
-        <input
-            id="spotifyProgress"
-            class="spotify-progress"
-            type="range"
-            min="0"
-            max="100"
-            value="0"
-            aria-label="Song progress"
-        />
-
-        <div class="spotify-time">
-            <span id="spotifyCurrentTime">0:00</span>
-            <span id="spotifyDuration">0:00</span>
-        </div>
-
-        <div class="spotify-controls">
-
-            <button
-                type="button"
-                id="spotifyPrevious"
-                aria-label="Previous song"
-            >
-                ⏮
-            </button>
-
-            <button
-                type="button"
-                id="spotifyPlayPause"
-                class="spotify-play-button"
-                aria-label="Play"
-            >
-                ▶
-            </button>
-
-            <button
-                type="button"
-                id="spotifyNext"
-                aria-label="Next song"
-            >
-                ⏭
-            </button>
-
-        </div>
-    </div>
-
-</div>
-            <div class="section-title">
-
-                <div>
-
-                    <p>
-                        OUR SOUNDTRACK
-                    </p>
-
-                    <h2>
-                        Music 🎵
-                    </h2>
+                    <button
+                        id="uploadVideoButton"
+                        class="primary-button"
+                        type="button">
+                        ＋ Add Video
+                    </button>
 
                 </div>
-
-
-                <button
-                    onclick="openPlaylistManager()"
-                >
-                    + New Playlist
-                </button>
-
-            </div>
-
-
-            <div
-                id="playlistGallery"
-                class="grid"
-            ></div>
-
-
-            <div
-                id="playlistViewer"
-                class="hidden"
-            >
-
-                <button
-                    onclick="closePlaylist()"
-                >
-                    ← Back
-                </button>
-
-
-                <h2
-                    id="playlistViewerTitle"
-                ></h2>
 
 
                 <div
-                    id="playlistSongs"
-                ></div>
+                    id="videoGrid"
+                    class="media-grid video-grid">
 
-            </div>
-
-        </section>
-
-
-
-        <!-- FAVORITES -->
-
-        <section
-            id="favoritesSection"
-            class="section hidden"
-        >
-
-            <div class="section-title">
-
-                <div>
-
-                    <p>
-                        OUR SPECIAL MEMORIES
-                    </p>
-
-                    <h2>
-                        Favorites ❤️
-                    </h2>
+                    <div class="empty-state">
+                        <div>🎥</div>
+                        <p>No videos yet.</p>
+                    </div>
 
                 </div>
 
-            </div>
+            </section>
 
 
-            <div
-                id="favoritesGallery"
-                class="grid"
-            ></div>
+            <!-- ============================= -->
+            <!-- MUSIC -->
+            <!-- ============================= -->
 
-        </section>
+            <section
+                id="musicSection"
+                class="page-section">
 
+                <div class="section-heading">
 
+                    <div>
+                        <span class="section-label">
+                            OUR SOUNDTRACK
+                        </span>
 
-        <!-- MESSAGES -->
+                        <h2>Music</h2>
 
-        <section
-            id="messagesSection"
-            class="section hidden"
-        >
+                        <p>
+                            Songs that remind us of each other.
+                        </p>
+                    </div>
 
-            <div class="section-title">
-
-                <div>
-
-                    <p>
-                        OUR WORDS
-                    </p>
-
-                    <h2>
-                        Messages 💌
-                    </h2>
+                    <button
+                        id="uploadMusicButton"
+                        class="primary-button"
+                        type="button">
+                        ＋ Add Song
+                    </button>
 
                 </div>
 
 
-                <button
-                    onclick="openMessageManager()"
-                >
-                    + Add Message
-                </button>
+                <!-- MUSIC PLAYER -->
 
-            </div>
+                <div class="music-player content-card">
+
+                    <div class="album-art" id="albumArt">
+                        🎵
+                    </div>
+
+                    <div class="player-info">
+
+                        <span id="currentSongTitle">
+                            No song selected
+                        </span>
+
+                        <small id="currentSongArtist">
+                            Leon & Majica
+                        </small>
+
+                        <audio
+                            id="audioPlayer"
+                            controls
+                            preload="metadata">
+                        </audio>
+
+                    </div>
+
+                </div>
 
 
-            <div
-                id="messageGallery"
-                class="message-grid"
-            ></div>
+                <!-- PLAYLIST -->
 
-        </section>
+                <div class="content-card playlist-card">
+
+                    <div class="card-header">
+
+                        <div>
+                            <span class="section-label">
+                                PLAYLIST
+                            </span>
+
+                            <h3>Our Songs</h3>
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="musicList"
+                        class="music-list">
+
+                        <div class="empty-state">
+                            <div>🎵</div>
+                            <p>No songs yet.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
 
 
+            <!-- ============================= -->
+            <!-- MESSAGES -->
+            <!-- ============================= -->
 
-        <!-- UPLOAD -->
+            <section
+                id="messagesSection"
+                class="page-section">
 
-        <section
-            id="uploadSection"
-            class="section hidden"
-        >
+                <div class="section-heading">
 
-            <h2>
-                Add Memory ❤️
+                    <div>
+                        <span class="section-label">
+                            FROM THE HEART
+                        </span>
+
+                        <h2>Messages</h2>
+
+                        <p>
+                            Words we want to keep forever.
+                        </p>
+                    </div>
+
+                    <button
+                        id="addMessageButton"
+                        class="primary-button"
+                        type="button">
+                        ＋ Write Message
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="messageList"
+                    class="message-list">
+
+                    <div class="empty-state">
+                        <div>💌</div>
+                        <p>No messages yet.</p>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+        <!-- ============================= -->
+        <!-- FOOTER -->
+        <!-- ============================= -->
+
+        <footer class="footer">
+
+            <p>
+                Made with ❤️ for Leon & Majica
+            </p>
+
+            <span>
+                Our memories. Our story. Our forever.
+            </span>
+
+        </footer>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- UPLOAD MODAL -->
+    <!-- ============================= -->
+
+    <div
+        id="uploadModal"
+        class="modal hidden">
+
+        <div class="modal-box">
+
+            <button
+                class="modal-close"
+                data-close-modal="uploadModal"
+                type="button">
+                ×
+            </button>
+
+            <h2 id="uploadModalTitle">
+                Add Memory
             </h2>
 
+            <p>
+                Choose a file to add to your memories.
+            </p>
 
-            <div class="panel">
+            <input
+                type="file"
+                id="mediaFile"
+                accept="image/*,video/*,audio/*">
 
-                <label>
-                    Type
-                </label>
+            <button
+                id="confirmUploadButton"
+                class="primary-button"
+                type="button">
+                Upload ❤️
+            </button>
 
+            <div
+                id="uploadProgress"
+                class="upload-progress hidden">
 
-                <select id="memoryType">
-
-                    <option value="photo">
-                        📸 Photo
-                    </option>
-
-                    <option value="video">
-                        🎬 Video
-                    </option>
-
-                    <option value="music">
-                        🎵 Music
-                    </option>
-
-                </select>
-
-
-                <label>
-                    Title
-                </label>
-
-
-                <input
-                    id="memoryTitle"
-                    placeholder="Memory title"
-                >
-
-
-                <label>
-                    Description
-                </label>
-
-
-                <textarea
-                    id="memoryDescription"
-                    placeholder="Write something..."
-                ></textarea>
-
-
-                <label>
-                    Folder / Album
-                </label>
-
-
-                <select id="memoryAlbum">
-
-                    <option value="">
-                        No folder
-                    </option>
-
-                </select>
-
-
-                <label>
-                    Playlist
-                </label>
-
-
-                <select id="memoryPlaylist">
-
-                    <option value="">
-                        No playlist
-                    </option>
-
-                </select>
-
-
-                <label>
-                    Choose file
-                </label>
-
-
-                <input
-                    id="memoryFiles"
-                    type="file"
-                    multiple
-                >
-
-
-                <button
-                    onclick="uploadMemories()"
-                >
-                    Upload
-                </button>
-
-
-                <p
-                    id="uploadStatus"
-                ></p>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- SETTINGS -->
-
-        <section
-            id="settingsSection"
-            class="section hidden"
-        >
-
-            <h2>
-                Settings ⚙️
-            </h2>
-
-
-            <div class="panel">
-
-                <h3>
-                    Theme
-                </h3>
-
-
-                <div class="theme-buttons">
-
-                    <button
-                        onclick="setTheme('dark')"
-                    >
-                        🌙 Dark
-                    </button>
-
-
-                    <button
-                        onclick="setTheme('romantic')"
-                    >
-                        ❤️ Romantic
-                    </button>
-
-
-                    <button
-                        onclick="setTheme('light')"
-                    >
-                        ☀️ Light
-                    </button>
-
+                <div class="progress-bar">
+                    <div
+                        id="progressFill"
+                        class="progress-fill">
+                    </div>
                 </div>
 
-
-                <h3>
-                    Website Background
-                </h3>
-
-
-                <select id="backgroundPhoto">
-
-                    <option value="">
-                        Default background
-                    </option>
-
-                </select>
-
-
-                <button
-                    onclick="setBackgroundPhoto()"
-                >
-                    Use Photo as Background
-                </button>
-
-
-                <button
-                    onclick="removeBackgroundPhoto()"
-                >
-                    Remove Background
-                </button>
+                <span id="progressText">
+                    Uploading...
+                </span>
 
             </div>
-            <!-- HERO BACKGROUND SETTINGS -->
 
-<div class="settings-card">
+        </div>
 
-    <h3>🏠 Home Hero Background</h3>
-
-    <p>
-        Choose which photo appears as the background
-        of the Home page.
-    </p>
-
-    <button
-        onclick="openHeroBackgroundManager()"
-    >
-        🖼️ Choose Hero Background
-    </button>
-
-    <button
-        onclick="resetHeroBackground()"
-    >
-        🔄 Use Latest Photo
-    </button>
-
-</div>
-
-<!-- MUSIC PLAYER ARTWORK SETTINGS -->
-
-<div class="settings-card">
-
-    <h3>🎵 Music Player Artwork</h3>
-
-    <p>
-        Choose a photo for your music player
-        and phone lock-screen controls.
-    </p>
-
-    <button
-        onclick="openMusicArtworkManager()"
-    >
-        🖼️ Choose Music Artwork
-    </button>
-
-    <button
-        onclick="resetMusicArtwork()"
-    >
-        🔄 Use Default Artwork
-    </button>
-
-    <div id="musicArtworkPreview"></div>
-
-</div>
-
-        </section>
-
-    </main>
+    </div>
 
 
-
+    <!-- ============================= -->
     <!-- MESSAGE MODAL -->
+    <!-- ============================= -->
 
     <div
         id="messageModal"
-        class="modal hidden"
-    >
+        class="modal hidden">
 
         <div class="modal-box">
 
             <button
-                class="close"
-                onclick="closeMessageManager()"
-            >
+                class="modal-close"
+                data-close-modal="messageModal"
+                type="button">
                 ×
             </button>
 
+            <h2>Write a Message 💌</h2>
 
-            <h2 id="messageModalTitle">
-                Add Message 💌
-            </h2>
+            <form id="messageForm">
 
+                <div class="input-group">
 
-            <input
-                id="messageId"
-                type="hidden"
-            >
+                    <label for="messageTitle">
+                        Title
+                    </label>
 
+                    <input
+                        type="text"
+                        id="messageTitle"
+                        placeholder="A little title..."
+                        required>
 
-            <input
-                id="messageTitle"
-                placeholder="Message title"
-            >
+                </div>
 
+                <div class="input-group">
 
-            <textarea
-                id="messageContent"
-                rows="8"
-                placeholder="Write your message..."
-            ></textarea>
+                    <label for="messageText">
+                        Message
+                    </label>
 
+                    <textarea
+                        id="messageText"
+                        rows="7"
+                        placeholder="Write something from your heart..."
+                        required>
+                    </textarea>
 
-            <button
-                onclick="saveMessage()"
-            >
-                Save Message
-            </button>
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-button">
+                    Save Message ❤️
+                </button>
+
+            </form>
 
         </div>
 
     </div>
 
 
-
-    <!-- ALBUM MODAL -->
+    <!-- ============================= -->
+    <!-- IMAGE VIEWER -->
+    <!-- ============================= -->
 
     <div
-        id="albumModal"
-        class="modal hidden"
-    >
-
-        <div class="modal-box">
-
-            <button
-                class="close"
-                onclick="closeAlbumManager()"
-            >
-                ×
-            </button>
-
-
-            <h2>
-                Create Album / Folder
-            </h2>
-
-
-            <input
-                id="newAlbumName"
-                placeholder="Folder name"
-            >
-
-
-            <select id="newAlbumType">
-
-                <option value="photo">
-                    📸 Photo Album
-                </option>
-
-                <option value="video">
-                    🎬 Video Folder
-                </option>
-
-            </select>
-
-
-            <button
-                onclick="createAlbum()"
-            >
-                Create
-            </button>
-
-
-            <div
-                id="albumManagerList"
-            ></div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- COVER MODAL -->
-
-    <div
-        id="coverModal"
-        class="modal hidden"
-    >
-
-        <div class="modal-box">
-
-            <button
-                class="close"
-                onclick="closeCoverManager()"
-            >
-                ×
-            </button>
-
-
-            <h2>
-                🖼️ Choose Folder Cover
-            </h2>
-
-
-            <p>
-                Choose a photo or video from this folder
-                to use as its cover.
-            </p>
-
-
-            <div
-                id="coverSelectionList"
-            ></div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- PLAYLIST MODAL -->
-
-    <div
-        id="playlistModal"
-        class="modal hidden"
-    >
-
-        <div class="modal-box">
-
-            <button
-                class="close"
-                onclick="closePlaylistManager()"
-            >
-                ×
-            </button>
-
-
-            <h2>
-                Create Playlist 🎵
-            </h2>
-
-
-            <input
-                id="newPlaylistName"
-                placeholder="Playlist name"
-            >
-
-
-            <button
-                onclick="createPlaylist()"
-            >
-                Create
-            </button>
-
-
-            <div
-                id="playlistManagerList"
-            ></div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- VIDEO FOLDER MODAL -->
-
-    <div
-        id="videoFolderModal"
-        class="modal hidden"
-    >
-
-        <div class="modal-box">
-
-            <button
-                class="close"
-                onclick="closeVideoFolderManager()"
-            >
-                ×
-            </button>
-
-
-            <h2>
-                Create Video Folder 🎬
-            </h2>
-
-
-            <input
-                id="newVideoFolderName"
-                placeholder="Video folder name"
-            >
-
-
-            <button
-                onclick="createVideoFolder()"
-            >
-                Create Folder
-            </button>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- MUSIC PLAYER -->
-
-<div
-    id="musicPlayer"
-    class="music-player hidden"
->
-
-    <div class="music-player-header">
-
-        <strong id="playerSongTitle">
-            Nothing playing
-        </strong>
-
-        <div>
-
-            <button
-                type="button"
-                onclick="minimizeMusicPlayer()"
-                aria-label="Minimize player"
-            >
-                −
-            </button>
-
-            <button
-                type="button"
-                onclick="closeMusicPlayer()"
-                aria-label="Close player"
-            >
-                ✕
-            </button>
-
-        </div>
-
-    </div>
-    <button
-    type="button"
-    id="restoreMusicButton"
-    class="hidden"
-    onclick="restoreMusicPlayer()"
->
-    🎵 Restore Player
-    </button>
-
-
-    <div
-        id="musicPlayerControls"
-    >
+        id="imageViewer"
+        class="image-viewer hidden">
 
         <button
-            onclick="previousSong()"
-        >
-            ⏮
+            id="closeImageViewer"
+            class="viewer-close"
+            type="button">
+            ×
         </button>
 
-
-        <button
-            id="playPauseButton"
-            onclick="toggleMusic()"
-        >
-            ▶
-        </button>
-
-
-        <button
-            onclick="nextSong()"
-        >
-            ⏭
-        </button>
-
-
-        <input
-            id="volumeControl"
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value="1"
-            onchange="changeVolume(this.value)"
-        >
-
-    </div>
-
-
-    <audio
-        id="audioPlayer"
-    ></audio>
-
-</div>
-
-
-
-<!-- JAVASCRIPT -->
-
-<script src="app.js"></script>
-
-<!-- HERO BACKGROUND SELECTOR -->
-
-<div
-    id="heroBackgroundModal"
-    class="modal hidden"
->
-
-    <div class="modal-box hero-background-modal">
-
-        <div class="hero-background-header">
-
-            <div>
-                <p class="hero-background-label">
-                    HOME SETTINGS
-                </p>
-
-                <h2>
-                    Choose Hero Background 🖼️
-                </h2>
-
-                <p>
-                    Select one of your photos for the
-                    Home page background.
-                </p>
-            </div>
-
-            <button
-                onclick="closeHeroBackgroundManager()"
-                class="hero-background-close"
-            >
-                ✕
-            </button>
-
-        </div>
+        <img
+            id="viewerImage"
+            src=""
+            alt="Memory">
 
         <div
-            id="heroBackgroundGallery"
-            class="hero-background-gallery"
-        >
-            Loading photos...
+            id="viewerCaption"
+            class="viewer-caption">
         </div>
 
     </div>
 
-</div>
-    
-<!-- MUSIC ARTWORK PHOTO SELECTOR -->
 
-<div id="musicArtworkModal" class="modal hidden">
-    <div class="modal-box hero-background-modal">
-        <h2>🎵 Choose Music Artwork</h2>
-
-        <p>
-            Select a photo for your music player
-            and phone lock screen.
-        </p>
-
-        <div
-            id="musicArtworkGallery"
-            class="hero-background-gallery"
-        >
-            Loading photos...
-        </div>
-
-        <button onclick="closeMusicArtworkManager()">
-            Close
-        </button>
-    </div>
-</div>
-
-
-<!-- FULLSCREEN MEDIA VIEWER -->
-
-<div
-    id="mediaViewer"
-    class="media-viewer hidden"
->
-
-    <button
-        class="media-viewer-close"
-        onclick="closeMediaViewer()"
-    >
-        ✕
-    </button>
-
+    <!-- ============================= -->
+    <!-- NOTIFICATION -->
+    <!-- ============================= -->
 
     <div
-        id="mediaViewerContent"
-        class="media-viewer-content"
-    ></div>
+        id="notification"
+        class="notification hidden">
 
-</div>
+        <span id="notificationIcon">
+            ❤️
+        </span>
 
+        <span id="notificationText">
+            Done
+        </span>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ============================= -->
+
+    <script src="app.js"></script>
 
 </body>
-
-    </html>
+</html>
