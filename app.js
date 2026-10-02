@@ -1233,7 +1233,16 @@ async function getMediaRecords() {
         error
     } = await supabaseClient
         .from(MEDIA_TABLE)
-        .select("*")
+        .select(`
+    id,
+    file_name,
+    file_path,
+    file_type,
+    mime_type,
+    file_size,
+    is_favorite,
+    created_at
+`)
         .order(
             "created_at",
             {
@@ -1679,186 +1688,95 @@ function initializeUploadHandler() {
    CREATE IMAGE CARD
    ========================================= */
 
-async function createPhotoCard(
-    item
-) {
+function createPhotoCard(item) {
+    const url = item.signed_url || "";
 
-    const url =
-        await getSignedUrl(
-            item.file_path
-        );
+    return `
+        <div class="media-card">
+            <div class="media-image-wrap">
+                <img
+                    src="${url}"
+                    alt="${escapeHtml(item.file_name)}"
+                    class="media-image"
+                    onclick="openImageViewer('${url}', '${escapeHtml(item.file_name)}')"
+                >
+            </div>
 
+            <div class="media-info">
+                <div class="media-title">
+                    ${escapeHtml(item.file_name)}
+                </div>
 
-    if (!url) {
-        return null;
-    }
+                <div class="memory-date">
+                    📅 ${formatMemoryDate(item.created_at)}
+                </div>
 
+                <div class="media-actions">
+                    <button
+                        class="favorite-button ${item.is_favorite ? "active" : ""}"
+                        onclick="toggleMediaFavorite('${item.id}', ${item.is_favorite})"
+                    >
+                        ${item.is_favorite ? "❤️" : "♡"}
+                    </button>
 
-    const card =
-        document.createElement(
-            "div"
-        );
-
-
-    card.className =
-        "media-card";
-
-
-    const image =
-        document.createElement(
-            "img"
-        );
-
-
-    image.src =
-        url;
-
-
-    image.alt =
-        item.file_name || "Memory";
-
-
-    image.loading =
-        "lazy";
-
-
-    image.addEventListener(
-        "click",
-        function () {
-
-            openImageViewer(
-                url,
-                item.file_name || ""
-            );
-
-        }
-    );
-
-
-    const overlay =
-        document.createElement(
-            "div"
-        );
-
-
-    overlay.className =
-        "media-card-overlay";
-
-
-    overlay.innerHTML = `
-        <p class="media-card-title">
-            ${escapeHtml(
-                item.file_name || "Memory"
-            )}
-        </p>
-
-        <span class="media-card-date">
-            ${escapeHtml(
-                formatDate(
-                    item.created_at
-                )
-            )}
-        </span>
+                    <button
+                        class="delete-button"
+                        onclick='confirmDeleteMedia(${JSON.stringify(item).replace(/'/g, "&#39;")})'
+                    >
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        </div>
     `;
-
-
-    card.appendChild(
-        image
-    );
-
-    card.appendChild(
-        overlay
-    );
-
-
-    return card;
-
 }
 
 
 /* =========================================
    CREATE VIDEO CARD
    ========================================= */
+function createVideoCard(item) {
+    const url = item.signed_url || "";
 
-async function createVideoCard(
-    item
-) {
+    return `
+        <div class="media-card">
+            <div class="media-video-wrap">
+                <video
+                    class="media-video"
+                    controls
+                    preload="metadata"
+                >
+                    <source src="${url}" type="${item.mime_type || "video/mp4"}">
+                </video>
+            </div>
 
-    const url =
-        await getSignedUrl(
-            item.file_path
-        );
+            <div class="media-info">
+                <div class="media-title">
+                    ${escapeHtml(item.file_name)}
+                </div>
 
+                <div class="memory-date">
+                    📅 ${formatMemoryDate(item.created_at)}
+                </div>
 
-    if (!url) {
-        return null;
-    }
+                <div class="media-actions">
+                    <button
+                        class="favorite-button ${item.is_favorite ? "active" : ""}"
+                        onclick="toggleMediaFavorite('${item.id}', ${item.is_favorite})"
+                    >
+                        ${item.is_favorite ? "❤️" : "♡"}
+                    </button>
 
-
-    const card =
-        document.createElement(
-            "div"
-        );
-
-
-    card.className =
-        "media-card";
-
-
-    const video =
-        document.createElement(
-            "video"
-        );
-
-
-    video.src =
-        url;
-
-    video.controls =
-        true;
-
-    video.preload =
-        "metadata";
-
-
-    const overlay =
-        document.createElement(
-            "div"
-        );
-
-
-    overlay.className =
-        "media-card-overlay";
-
-
-    overlay.innerHTML = `
-        <p class="media-card-title">
-            ${escapeHtml(
-                item.file_name || "Video"
-            )}
-        </p>
-
-        <span class="media-card-date">
-            ${escapeHtml(
-                formatDate(
-                    item.created_at
-                )
-            )}
-        </span>
+                    <button
+                        class="delete-button"
+                        onclick='confirmDeleteMedia(${JSON.stringify(item).replace(/'/g, "&#39;")})'
+                    >
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        </div>
     `;
-
-
-    card.appendChild(
-        video
-    );
-
-    card.appendChild(
-        overlay
-    );
-
-
-    return card;
-
 }
 
 
@@ -3253,3 +3171,84 @@ async function refreshMediaUrl(
 initializeAudioPlayer();
 
 initializeMessageForm();
+// ==========================================
+// FAVORITES
+// ==========================================
+
+async function toggleMediaFavorite(id, currentValue) {
+    try {
+        const { error } = await supabaseClient
+            .from("media")
+            .update({
+                is_favorite: !currentValue
+            })
+            .eq("id", id);
+
+        if (error) {
+            throw error;
+        }
+
+        showNotification(
+            !currentValue
+                ? "Added to favorites ❤️"
+                : "Removed from favorites",
+            "success"
+        );
+
+        await loadAllMemories();
+
+    } catch (error) {
+        console.error("Favorite error:", error);
+        showNotification(
+            "Could not update favorite",
+            "error"
+        );
+    }
+}
+
+
+// ==========================================
+// DELETE MEDIA
+// ==========================================
+
+async function confirmDeleteMedia(item) {
+    if (!item || !item.id) {
+        return;
+    }
+
+    const confirmed = confirm(
+        `Delete "${item.file_name}"?\n\nThis cannot be undone.`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    await deleteMedia(item);
+}
+
+
+// ==========================================
+// FORMAT MEMORY DATE
+// ==========================================
+
+function formatMemoryDate(dateValue) {
+    if (!dateValue) {
+        return "";
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleDateString(
+        undefined,
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    );
+}
