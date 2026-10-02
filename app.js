@@ -2035,135 +2035,118 @@ function updateMemoryCounts(
    LOAD RECENT MEMORIES
    ========================================= */
 
-function loadRecentMemories(
-    records
-) {
 
-    const container =
-        $("recentMemories");
-
-
-    if (!container) {
-        return;
-    }
-
+async function loadRecentMemories(records) {
+    const container = $("recentMemories");
+    if (!container) return;
 
     container.innerHTML = "";
 
-
-    const recent =
-        records.slice(
-            0,
-            8
-        );
-
+    const recent = (records || []).slice(0, 8);
 
     if (recent.length === 0) {
-
         container.innerHTML = `
             <div class="empty-state">
                 <div>❤️</div>
                 <p>Your memories will appear here.</p>
             </div>
         `;
-
         return;
-
     }
 
+    for (const item of recent) {
+        const card = document.createElement("div");
+        card.className = "media-card";
 
-    /*
-       We create lightweight preview cards.
-       Full signed URLs are loaded for images.
-    */
+        const name = escapeHtml(item.file_name || "Memory");
 
-    recent.forEach(
-        async function (item) {
+        try {
+            const url = await getSignedUrl(item.file_path);
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+            if (!url) {
+                console.error("Cannot load memory:", item.file_path);
+                continue;
+            }
 
-
-            card.className =
-                "media-card";
-
-
-            if (
-                item.file_type === "photo"
-            ) {
-
-                const url =
-                    await getSignedUrl(
-                        item.file_path
-                    );
-
-
-                if (url) {
-
-                    card.innerHTML = `
-                        <img
-                            src="${url}"
-                            alt="Memory"
-                            loading="lazy">
-                    `;
-
-
-                    card.addEventListener(
-                        "click",
-                        function () {
-
-                            openImageViewer(
-                                url,
-                                item.file_name || ""
-                            );
-
-                        }
-                    );
-
-                }
-
-            } else {
-
-                let icon = "❤️";
-
-
-                if (
-                    item.file_type === "video"
-                ) {
-                    icon = "🎥";
-                }
-
-
-                if (
-                    item.file_type === "music"
-                ) {
-                    icon = "🎵";
-                }
-
-
+            if (item.file_type === "photo") {
                 card.innerHTML = `
-                    <div class="empty-state">
-                        <div>${icon}</div>
-                        <p>
-                            ${escapeHtml(
-                                item.file_name || "Memory"
-                            )}
-                        </p>
+                    <img
+                        class="media-image"
+                        src="${url}"
+                        alt="${name}"
+                        loading="lazy"
+                    >
+                    <div class="media-info">${name}</div>
+                `;
+
+                card.style.cursor = "pointer";
+                card.addEventListener("click", () => {
+                    openImageViewer(url, item.file_name || "Memory");
+                });
+
+            } else if (item.file_type === "video") {
+                card.innerHTML = `
+                    <video
+                        class="media-video"
+                        src="${url}"
+                        controls
+                        playsinline
+                        preload="metadata"
+                    ></video>
+                    <div class="media-info">${name}</div>
+                `;
+
+                // Keep the video controls clickable.
+                const video = card.querySelector("video");
+                video.addEventListener("error", () => {
+                    console.error("Video failed to load:", item.file_name);
+                });
+
+            } else if (item.file_type === "music") {
+                card.innerHTML = `
+                    <div class="home-music-preview">
+                        <div class="home-music-icon">🎵</div>
+                        <div class="media-info">${name}</div>
+                        <button type="button" class="home-play-button">
+                            ▶ Play song
+                        </button>
                     </div>
                 `;
 
+                const playButton = card.querySelector(".home-play-button");
+
+                playButton.addEventListener("click", async (event) => {
+                    event.stopPropagation();
+
+                    const index = currentPlaylist.findIndex(song =>
+                        song.file_path === item.file_path
+                    );
+
+                    if (index !== -1) {
+                        await playSong(index);
+                    } else {
+                        showNotification(
+                            "Song not found in the music playlist.",
+                            "⚠️"
+                        );
+                    }
+                });
+
+            } else {
+                card.innerHTML = `
+                    <div class="empty-state">
+                        <div>❤️</div>
+                        <p>${name}</p>
+                    </div>
+                `;
             }
 
+            container.appendChild(card);
 
-            container.appendChild(
-                card
-            );
-
+        } catch (error) {
+            console.error("Could not display memory:", error);
         }
-    );
-
+    }
 }
 
 
@@ -2197,9 +2180,7 @@ async function loadAllMemories() {
         );
 
 
-        loadRecentMemories(
-            records
-        );
+        await loadRecentMemories(records);
 
 
         await loadPhotos(
