@@ -1673,13 +1673,11 @@ function initializeUploadHandler() {
     );
 
 }
-
-
 /* =========================================
    CREATE IMAGE CARD
    ========================================= */
 
-async function createPhotoCard(item) {
+function createPhotoCard(item) {
     const url = item.signed_url || "";
 
     return `
@@ -1727,7 +1725,7 @@ async function createPhotoCard(item) {
    CREATE VIDEO CARD
    ========================================= */
 
-async function createVideoCard(item) {
+function createVideoCard(item) {
     const url = item.signed_url || "";
 
     return `
@@ -1738,7 +1736,10 @@ async function createVideoCard(item) {
                     controls
                     preload="metadata"
                 >
-                    <source src="${url}" type="${item.mime_type || "video/mp4"}">
+                    <source
+                        src="${url}"
+                        type="${item.mime_type || "video/mp4"}"
+                    >
                 </video>
             </div>
 
