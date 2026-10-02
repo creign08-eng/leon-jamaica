@@ -603,26 +603,72 @@
                         </div>
                     </div>
 
-                    <div class="settings-card">
-                        <h3>🎵 Music Player</h3>
+                    
+<div class="settings-card">
+    <h3>🎵 Music Player Background</h3>
 
-                        <label for="musicPlayerStyle">Player layout</label>
-                        <select id="musicPlayerStyle">
-                            <option value="classic">Classic</option>
-                            <option value="compact">Compact</option>
-                            <option value="artwork">Large artwork</option>
-                        </select>
+    <label for="musicPlayerStyle">Player layout</label>
+    <select id="musicPlayerStyle">
+        <option value="classic">Classic</option>
+        <option value="compact">Compact</option>
+        <option value="artwork">Large artwork</option>
+    </select>
 
-                        <label for="musicPlayerBackground">Player background</label>
-                        <select id="musicPlayerBackground">
-                            <option value="default">Default</option>
-                            <option value="rose">Rose</option>
-                            <option value="midnight">Midnight</option>
-                        </select>
+    <label for="musicPlayerBackground">Background style</label>
+    <select id="musicPlayerBackground">
+        <option value="default">Default</option>
+        <option value="rose">Rose</option>
+        <option value="midnight">Midnight</option>
+        <option value="photo">My photo</option>
+    </select>
 
-                        <label for="musicArtworkUrl">Artwork image URL (optional)</label>
-                        <input type="url" id="musicArtworkUrl" placeholder="https://example.com/artwork.jpg">
-                    </div>
+    <label for="musicPhotoSource">Choose photo source</label>
+    <select id="musicPhotoSource">
+        <option value="gallery">Choose from my gallery</option>
+        <option value="upload">Upload my own photo</option>
+    </select>
+
+    <div id="musicGalleryPickerWrap">
+        <label for="musicGalleryPhoto">Select a gallery photo</label>
+        <select id="musicGalleryPhoto">
+            <option value="">Loading gallery photos...</option>
+        </select>
+    </div>
+
+    <div id="musicUploadPickerWrap" hidden>
+        <label for="musicBackgroundUpload">Choose your photo</label>
+        <input
+            type="file"
+            id="musicBackgroundUpload"
+            accept="image/*">
+    </div>
+
+    <label for="musicBrightness">Background brightness</label>
+    <input
+        type="range"
+        id="musicBrightness"
+        min="30"
+        max="120"
+        value="75">
+
+    <div id="musicBackgroundPreview" class="hero-preview">
+        <span>Your music background preview 🎵</span>
+    </div>
+
+    <div class="settings-actions">
+        <button type="button" id="previewMusicBackgroundButton">
+            Preview
+        </button>
+        <button type="button" id="resetMusicBackgroundButton">
+            Reset
+        </button>
+    </div>
+
+    <p class="settings-note">
+        Choosing a gallery photo will not create another gallery item.
+    </p>
+</div>
+
 
                     <div class="settings-card">
                         <h3>🔒 Privacy</h3>
