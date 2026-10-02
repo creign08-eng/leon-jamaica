@@ -2565,9 +2565,32 @@ async function playSong(index) {
 
         navigator.mediaSession.metadata =
             new MediaMetadata({
-                title: song.title || "Song",
-                artist: "Leon & Majica",
-                album: "Our Soundtrack"
+                
+const { data: artworkSettings } = await supabaseClient
+    .from("site_settings")
+    .select("music_artwork_path")
+    .eq("id", 1)
+    .single();
+
+let artworkUrl = "";
+
+if (artworkSettings?.music_artwork_path) {
+    artworkUrl = await getSignedUrl(
+        artworkSettings.music_artwork_path
+    );
+}
+
+const artwork = artworkUrl
+    ? [{ src: artworkUrl, sizes: "512x512", type: "image/jpeg" }]
+    : [];
+
+navigator.mediaSession.metadata = new MediaMetadata({
+    title: song.title || "Song",
+    artist: "Leon & Majica",
+    album: "Our Soundtrack",
+    artwork: artwork
+});
+
             });
 
         navigator.mediaSession.setActionHandler(
