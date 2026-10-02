@@ -2637,7 +2637,6 @@ async function playSong(index) {
 
 
 function toggleMusic() {
-function toggleMusic() {
 
     const player =
         document.getElementById(
