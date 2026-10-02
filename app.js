@@ -4439,22 +4439,28 @@ function minimizeMusicPlayer() {
             "musicPlayerControls"
         );
 
+    const restoreButton =
+        document.getElementById(
+            "restoreMusicButton"
+        );
+
     const player =
         document.getElementById(
             "musicPlayer"
         );
 
-    if (!controls || !player) {
+    if (!controls || !restoreButton || !player) {
         return;
     }
 
     controls.classList.add("hidden");
 
+    restoreButton.classList.remove("hidden");
+
     player.classList.add(
         "music-player-minimized"
     );
 }
-
 
 function closeMusicPlayer() {
 
@@ -4506,18 +4512,23 @@ function restoreMusicPlayer() {
             "musicPlayerControls"
         );
 
+    const restoreButton =
+        document.getElementById(
+            "restoreMusicButton"
+        );
+
     const player =
         document.getElementById(
             "musicPlayer"
         );
 
-    if (!controls || !player) {
+    if (!controls || !restoreButton || !player) {
         return;
     }
 
-    controls.classList.remove(
-        "hidden"
-    );
+    controls.classList.remove("hidden");
+
+    restoreButton.classList.add("hidden");
 
     player.classList.remove(
         "music-player-minimized"
