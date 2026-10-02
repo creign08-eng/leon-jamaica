@@ -4746,3 +4746,113 @@ if (mainMusicAudio && pageMusicAudio) {
             }
         });
 }
+
+async function openMusicArtworkManager() {
+    const modal = document.getElementById("musicArtworkModal");
+    const gallery = document.getElementById("musicArtworkGallery");
+
+    if (!modal || !gallery) return;
+
+    modal.classList.remove("hidden");
+    gallery.innerHTML = "Loading photos...";
+
+    const { data: photos, error } = await supabaseClient
+        .from("memories")
+        .select("id,title,file_path,created_at")
+        .eq("media_type", "photo")
+        .order("created_at", { ascending: false });
+
+    if (error || !photos || photos.length === 0) {
+        gallery.textContent = error
+            ? "Unable to load photos."
+            : "No photos available yet.";
+        return;
+    }
+
+    const { data: settings, error: settingsError } =
+        await supabaseClient
+            .from("site_settings")
+            .select("music_artwork_path")
+            .eq("id", 1)
+            .single();
+
+    if (settingsError) {
+        gallery.textContent =
+            "The artwork setting needs to be added to Supabase first.";
+        console.error(settingsError);
+        return;
+    }
+
+    gallery.innerHTML = "";
+
+    for (const photo of photos) {
+        const url = await getSignedUrl(photo.file_path);
+        if (!url) continue;
+
+        const item = document.createElement("div");
+        item.className = "hero-background-item";
+
+        const image = document.createElement("img");
+        image.src = url;
+        image.alt = photo.title || "Memory";
+        image.style.cssText =
+            "width:100%;height:100%;object-fit:contain;";
+
+        const name = document.createElement("div");
+        name.className = "hero-background-name";
+        name.textContent = photo.title || "Untitled";
+
+        if (photo.file_path === settings?.music_artwork_path) {
+            item.classList.add("selected");
+        }
+
+        item.append(image, name);
+
+        item.addEventListener("click", async () => {
+            const { error } = await supabaseClient
+                .from("site_settings")
+                .update({
+                    music_artwork_path: photo.file_path,
+                    updated_at: new Date().toISOString()
+                })
+                .eq("id", 1);
+
+            if (error) {
+                alert("Unable to save artwork: " + error.message);
+                return;
+            }
+
+            closeMusicArtworkManager();
+            alert("Music artwork saved! ❤️");
+            if (typeof playSong === "function" &&
+                typeof currentSongIndex !== "undefined" &&
+                currentSongIndex >= 0) {
+                await playSong(currentSongIndex);
+            }
+        });
+
+        gallery.appendChild(item);
+    }
+}
+
+function closeMusicArtworkManager() {
+    const modal = document.getElementById("musicArtworkModal");
+    if (modal) modal.classList.add("hidden");
+}
+
+async function resetMusicArtwork() {
+    const { error } = await supabaseClient
+        .from("site_settings")
+        .update({
+            music_artwork_path: null,
+            updated_at: new Date().toISOString()
+        })
+        .eq("id", 1);
+
+    if (error) {
+        alert("Unable to reset artwork: " + error.message);
+        return;
+    }
+
+    alert("Music artwork reset to default. ❤️");
+}
