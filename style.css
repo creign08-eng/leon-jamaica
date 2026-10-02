@@ -1221,3 +1221,170 @@ button {
         transform: none;
     }
 }
+
+/* ================================
+   SETTINGS PAGE
+================================ */
+
+#settingsSection .section-heading {
+    margin-bottom: 24px;
+}
+
+#settingsSection .section-heading h2 {
+    color: #e8b4bd;
+    margin-bottom: 8px;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.settings-card {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid rgba(232, 180, 189, 0.25);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.settings-card h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #e8b4bd;
+}
+
+.settings-card p {
+    line-height: 1.5;
+}
+
+.settings-card label:not(.settings-toggle) {
+    display: block;
+    margin: 14px 0 7px;
+    font-size: 0.95rem;
+}
+
+.settings-card input:not([type="checkbox"]):not([type="range"]),
+.settings-card select,
+.settings-card textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 11px;
+    border: 1px solid rgba(232, 180, 189, 0.3);
+    border-radius: 9px;
+    background: #171416;
+    color: #fff;
+    font: inherit;
+}
+
+.settings-card input[type="range"] {
+    display: block;
+    width: 100%;
+    accent-color: #e8b4bd;
+}
+
+.settings-card textarea {
+    resize: vertical;
+}
+
+.settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.settings-toggle input {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: #d99aa8;
+}
+
+.settings-note {
+    font-size: 0.85rem;
+    opacity: 0.75;
+}
+
+.hero-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    margin-top: 16px;
+    padding: 18px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #35242b, #090909);
+    background-position: center;
+    background-size: cover;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+}
+
+.settings-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.settings-actions button,
+#saveSettingsButton {
+    padding: 11px 16px;
+    border: 1px solid rgba(232, 180, 189, 0.35);
+    border-radius: 10px;
+    background: #39252d;
+    color: white;
+    font: inherit;
+    cursor: pointer;
+}
+
+.settings-actions button:hover,
+#saveSettingsButton:hover {
+    background: #573642;
+}
+
+.settings-save-row {
+    margin-top: 24px;
+    padding: 18px;
+    border-radius: 14px;
+    background: rgba(232, 180, 189, 0.07);
+}
+
+#settingsStatus {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+#settingsSection [hidden] {
+    display: none !important;
+}
+
+@media (max-width: 700px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-card {
+        padding: 16px;
+    }
+
+    .settings-actions button {
+        flex: 1 1 auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .settings-card *,
+    .settings-actions button {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
