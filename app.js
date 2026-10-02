@@ -2612,37 +2612,87 @@ navigator.mediaSession.metadata = new MediaMetadata({
             () => {
                 const player =
                     document.getElementById(
-                        "audioPlayer"
-                    );
 
-                if (player) {
-                    player.pause();
-                }
-            }
-        );
-
-        navigator.mediaSession.setActionHandler(
-            "previoustrack",
-            () => {
-                previousSong();
-            }
-        );
-
-        navigator.mediaSession.setActionHandler(
-            "nexttrack",
-            () => {
-                nextSong();
-            }
-        );
+async function playSong(index) {
+    if (!currentPlaylist[index]) {
+        return;
     }
 
-    document
-        .getElementById(
-            "musicPlayer"
-        )
-        .classList.remove(
-            "hidden"
-        );
+    currentSongIndex = index;
+    const song = currentPlaylist[index];
+
+    const url = await getSignedUrl(song.file_path);
+    const player = document.getElementById("audioPlayer");
+
+    if (!player || !url) {
+        return;
+    }
+
+    player.src = url;
+
+    const titleElement = document.getElementById("playerSongTitle");
+    if (titleElement) {
+        titleElement.textContent = song.title || "Song";
+    }
+
+    // PHONE / LOCK-SCREEN MEDIA CONTROLS
+    if ("mediaSession" in navigator) {
+        let artwork = [];
+
+        try {
+            const { data: settings, error } = await supabaseClient
+                .from("site_settings")
+                .select("music_artwork_path")
+                .eq("id", 1)
+                .single();
+
+            if (!error && settings?.music_artwork_path) {
+                const artworkUrl = await getSignedUrl(
+                    settings.music_artwork_path
+                );
+
+                if (artworkUrl) {
+                    artwork = [{
+                        src: artworkUrl,
+                        sizes: "512x512",
+                        type: "image/jpeg"
+                    }];
+                }
+            }
+        } catch (error) {
+            console.error("Artwork loading error:", error);
+        }
+
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: song.title || "Song",
+            artist: "Leon & Majica",
+            album: "Our Soundtrack",
+            artwork: artwork
+        });
+
+        navigator.mediaSession.setActionHandler("play", () => {
+            const audio = document.getElementById("audioPlayer");
+            if (audio) audio.play();
+        });
+
+        navigator.mediaSession.setActionHandler("pause", () => {
+            const audio = document.getElementById("audioPlayer");
+            if (audio) audio.pause();
+        });
+
+        navigator.mediaSession.setActionHandler("previoustrack", () => {
+            previousSong();
+        });
+
+        navigator.mediaSession.setActionHandler("nexttrack", () => {
+            nextSong();
+        });
+    }
+
+    const musicPlayer = document.getElementById("musicPlayer");
+    if (musicPlayer) {
+        musicPlayer.classList.remove("hidden");
+    }
 
     try {
         await player.play();
@@ -2650,12 +2700,10 @@ navigator.mediaSession.metadata = new MediaMetadata({
         console.error(error);
     }
 
-    document
-        .getElementById(
-            "playPauseButton"
-        )
-        .textContent =
-        "⏸";
+    const playPauseButton = document.getElementById("playPauseButton");
+    if (playPauseButton) {
+        playPauseButton.textContent = "⏸";
+    }
 }
 
 
