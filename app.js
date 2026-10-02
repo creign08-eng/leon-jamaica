@@ -1783,78 +1783,44 @@ function createVideoCard(item) {
 /* =========================================
    CREATE MUSIC ITEM
    ========================================= */
+function createMusicItem(item, index) {
+    return `
+        <div class="music-item">
+            <button
+                class="music-play-button"
+                onclick="playSong(${index})"
+                aria-label="Play song"
+            >
+                ▶
+            </button>
 
-function createMusicItem(
-    item,
-    index
-) {
+            <div class="music-info">
+                <div class="music-title">
+                    ${escapeHtml(item.file_name)}
+                </div>
 
-    const row =
-        document.createElement(
-            "div"
-        );
+                <div class="memory-date">
+                    📅 ${formatMemoryDate(item.created_at)}
+                </div>
+            </div>
 
+            <div class="music-actions">
+                <button
+                    class="favorite-button ${item.is_favorite ? "active" : ""}"
+                    onclick="toggleMediaFavorite('${item.id}', ${item.is_favorite})"
+                >
+                    ${item.is_favorite ? "❤️" : "♡"}
+                </button>
 
-    row.className =
-        "song-item";
-
-
-    row.innerHTML = `
-        <div class="song-number">
-            ${index + 1}
+                <button
+                    class="delete-button"
+                    onclick='confirmDeleteMedia(${JSON.stringify(item).replace(/'/g, "&#39;")})'
+                >
+                    🗑️
+                </button>
+            </div>
         </div>
-
-        <div class="song-details">
-
-            <span class="song-title">
-                ${escapeHtml(
-                    item.file_name || "Untitled Song"
-                )}
-            </span>
-
-            <span class="song-subtitle">
-                ${escapeHtml(
-                    formatFileSize(
-                        item.file_size
-                    )
-                )}
-            </span>
-
-        </div>
-
-        <button
-            class="song-play-button"
-            type="button"
-            aria-label="Play song">
-            ▶
-        </button>
     `;
-
-
-    const playButton =
-        row.querySelector(
-            ".song-play-button"
-        );
-
-
-    if (playButton) {
-
-        playButton.addEventListener(
-            "click",
-            function () {
-
-                playSong(
-                    index
-                );
-
-            }
-        );
-
-    }
-
-
-    return row;
-
 }
 
 
