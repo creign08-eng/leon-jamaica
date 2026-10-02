@@ -2058,6 +2058,81 @@ async function loadPlaylists() {
     }
 
     gallery.innerHTML = "";
+        // ==========================================
+    // AUTOMATIC SOUNDTRACK
+    // ==========================================
+
+    const {
+        data: soundtrackSongs,
+        error: soundtrackError
+    } = await supabaseClient
+        .from("memories")
+        .select("*")
+        .eq("media_type", "music")
+        .order("created_at", {
+            ascending: true
+        });
+
+    if (!soundtrackError) {
+
+        const soundtrack =
+            document.createElement("div");
+
+        soundtrack.className =
+            "folder";
+
+        soundtrack.innerHTML = `
+            <div
+                style="
+                    width:100%;
+                    height:180px;
+                    border-radius:14px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:
+                        linear-gradient(
+                            135deg,
+                            #6b1d4f,
+                            #171717
+                        );
+                    font-size:55px;
+                    margin-bottom:12px;
+                "
+            >
+                🎵
+            </div>
+
+            <h3>
+                Soundtrack
+            </h3>
+
+            <p>
+                ${
+                    soundtrackSongs
+                        ? soundtrackSongs.length
+                        : 0
+                }
+                song${
+                    soundtrackSongs &&
+                    soundtrackSongs.length === 1
+                        ? ""
+                        : "s"
+                }
+                • All your music
+            </p>
+
+            <button
+                onclick="openSoundtrack()"
+            >
+                🎵 Open Soundtrack
+            </button>
+        `;
+
+        gallery.appendChild(
+            soundtrack
+        );
+    }
 
     if (
         !data ||
