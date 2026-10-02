@@ -2524,27 +2524,17 @@ async function deletePlaylist(id) {
 // MUSIC PLAYER
 // ==========================================
 
-async function playSong(index) {
 
+async function playSong(index) {
     if (!currentPlaylist[index]) {
         return;
     }
 
-    currentSongIndex =
-        index;
+    currentSongIndex = index;
+    const song = currentPlaylist[index];
 
-    const song =
-        currentPlaylist[index];
-
-    const url =
-        await getSignedUrl(
-            song.file_path
-        );
-
-    const player =
-        document.getElementById(
-            "audioPlayer"
-        );
+    const url = await getSignedUrl(song.file_path);
+    const player = document.getElementById("audioPlayer");
 
     if (!player || !url) {
         return;
@@ -2552,67 +2542,81 @@ async function playSong(index) {
 
     player.src = url;
 
-    document
-        .getElementById(
-            "playerSongTitle"
-        )
-        .textContent =
-        song.title ||
-        "Song";
-        // PHONE / LOCK-SCREEN MEDIA CONTROLS
+    const titleElement = document.getElementById("playerSongTitle");
+    if (titleElement) {
+        titleElement.textContent = song.title || "Song";
+    }
 
+    // PHONE / LOCK-SCREEN MEDIA CONTROLS
     if ("mediaSession" in navigator) {
+        let artwork = [];
 
-        navigator.mediaSession.metadata =
-            new MediaMetadata({
-                
-const { data: artworkSettings } = await supabaseClient
-    .from("site_settings")
-    .select("music_artwork_path")
-    .eq("id", 1)
-    .single();
+        try {
+            const { data: settings, error } = await supabaseClient
+                .from("site_settings")
+                .select("music_artwork_path")
+                .eq("id", 1)
+                .single();
 
-let artworkUrl = "";
+            if (!error && settings?.music_artwork_path) {
+                const artworkUrl = await getSignedUrl(
+                    settings.music_artwork_path
+                );
 
-if (artworkSettings?.music_artwork_path) {
-    artworkUrl = await getSignedUrl(
-        artworkSettings.music_artwork_path
-    );
-}
-
-const artwork = artworkUrl
-    ? [{ src: artworkUrl, sizes: "512x512", type: "image/jpeg" }]
-    : [];
-
-navigator.mediaSession.metadata = new MediaMetadata({
-    title: song.title || "Song",
-    artist: "Leon & Majica",
-    album: "Our Soundtrack",
-    artwork: artwork
-});
-
-            });
-
-        navigator.mediaSession.setActionHandler(
-            "play",
-            () => {
-                const player =
-                    document.getElementById(
-                        "audioPlayer"
-                    );
-
-                if (player) {
-                    player.play();
+                if (artworkUrl) {
+                    artwork = [{
+                        src: artworkUrl,
+                        sizes: "512x512",
+                        type: "image/jpeg"
+                    }];
                 }
             }
-        );
+        } catch (error) {
+            console.error("Artwork loading error:", error);
+        }
 
-        navigator.mediaSession.setActionHandler(
-            "pause",
-            () => {
-                const player =
-                    document.getElementById(
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: song.title || "Song",
+            artist: "Leon & Majica",
+            album: "Our Soundtrack",
+            artwork: artwork
+        });
 
+        navigator.mediaSession.setActionHandler("play", () => {
+            const audio = document.getElementById("audioPlayer");
+            if (audio) audio.play();
+        });
+
+        navigator.mediaSession.setActionHandler("pause", () => {
+            const audio = document.getElementById("audioPlayer");
+            if (audio) audio.pause();
+        });
+
+        navigator.mediaSession.setActionHandler("previoustrack", () => {
+            previousSong();
+        });
+
+        navigator.mediaSession.setActionHandler("nexttrack", () => {
+            nextSong();
+        });
+    }
+
+    const musicPlayer = document.getElementById("musicPlayer");
+    if (musicPlayer) {
+        musicPlayer.classList.remove("hidden");
+    }
+
+    try {
+        await player.play();
+    } catch (error) {
+        console.error(error);
+    }
+
+    const playPauseButton = document.getElementById("playPauseButton");
+    if (playPauseButton) {
+        playPauseButton.textContent = "⏸";
+    }
+}
 
 
 function toggleMusic() {
