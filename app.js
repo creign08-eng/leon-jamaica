@@ -2637,6 +2637,7 @@ async function playSong(index) {
 
 
 function toggleMusic() {
+function toggleMusic() {
 
     const player =
         document.getElementById(
@@ -2651,23 +2652,27 @@ function toggleMusic() {
 
         player.play();
 
-        document
-            .getElementById(
-                "playPauseButton"
-            )
-            .textContent =
-            "⏸";
+        document.getElementById(
+            "playPauseButton"
+        ).textContent = "⏸";
+
+        if ("mediaSession" in navigator) {
+            navigator.mediaSession.playbackState =
+                "playing";
+        }
 
     } else {
 
         player.pause();
 
-        document
-            .getElementById(
-                "playPauseButton"
-            )
-            .textContent =
-            "▶";
+        document.getElementById(
+            "playPauseButton"
+        ).textContent = "▶";
+
+        if ("mediaSession" in navigator) {
+            navigator.mediaSession.playbackState =
+                "paused";
+        }
     }
 }
 
