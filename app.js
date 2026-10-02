@@ -1311,7 +1311,98 @@ async function getSignedUrl(
     return data?.signedUrl || null;
 
 }
+/* =========================================
+   SITE BACKGROUND SETTINGS
+   ========================================= */
 
+async function getSiteBackgroundSettings() {
+
+    requireSupabase();
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("site_settings")
+        .select("*")
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+        console.error(
+            "Error loading site background settings:",
+            error
+        );
+        return null;
+    }
+
+    return data;
+}
+
+
+async function saveSiteBackgroundSettings(
+    backgroundPath,
+    backgroundSource,
+    brightness
+) {
+
+    requireSupabase();
+
+    const {
+        data: existing,
+        error: existingError
+    } = await supabaseClient
+        .from("site_settings")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
+
+    if (existingError) {
+        throw existingError;
+    }
+
+    const settings = {
+        background_path: backgroundPath || null,
+        background_source:
+            backgroundSource || "gallery",
+        background_brightness:
+            Number(brightness) || 45,
+        updated_at:
+            new Date().toISOString()
+    };
+
+    let result;
+
+    if (existing?.id) {
+
+        result = await supabaseClient
+            .from("site_settings")
+            .update(settings)
+            .eq("id", existing.id)
+            .select()
+            .single();
+
+    } else {
+
+        result = await supabaseClient
+            .from("site_settings")
+            .insert(settings)
+            .select()
+            .single();
+
+    }
+
+    if (result.error) {
+        console.error(
+            "Error saving site background settings:",
+            result.error
+        );
+
+        throw result.error;
+    }
+
+    return result.data;
+}
 
 /* =========================================
    UPLOAD FILE
