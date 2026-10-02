@@ -1147,6 +1147,8 @@ async function initializeApp() {
     initializeImageViewer();
 
     initializeUploadButtons();
+   
+    initializeSettingsControls();
 
 
     const messageButton =
