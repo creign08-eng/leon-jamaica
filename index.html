@@ -990,19 +990,43 @@
 
     <!-- MUSIC PLAYER -->
 
-    <div
-        id="musicPlayer"
-        class="music-player hidden"
-    >
+<div
+    id="musicPlayer"
+    class="music-player hidden"
+>
+
+    <div class="music-player-header">
+
+        <strong id="playerSongTitle">
+            Nothing playing
+        </strong>
 
         <div>
 
-            <strong id="playerSongTitle">
-                Nothing playing
-            </strong>
+            <button
+                type="button"
+                onclick="minimizeMusicPlayer()"
+                aria-label="Minimize player"
+            >
+                −
+            </button>
+
+            <button
+                type="button"
+                onclick="closeMusicPlayer()"
+                aria-label="Close player"
+            >
+                ✕
+            </button>
 
         </div>
 
+    </div>
+
+
+    <div
+        id="musicPlayerControls"
+    >
 
         <button
             onclick="previousSong()"
@@ -1036,12 +1060,12 @@
             onchange="changeVolume(this.value)"
         >
 
-
-        <audio
-            id="audioPlayer"
-        ></audio>
-
     </div>
+
+
+    <audio
+        id="audioPlayer"
+    ></audio>
 
 </div>
 
