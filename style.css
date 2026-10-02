@@ -1092,3 +1092,132 @@ button {
     }
 
 }
+
+/* ❤️ LEON & MAJICA — ROMANTIC HOME THEME */
+
+#homeSection {
+    position: relative;
+    isolation: isolate;
+    padding: 24px 16px;
+    background:
+        radial-gradient(
+            ellipse at top,
+            rgba(133, 55, 79, 0.20),
+            transparent 65%
+        );
+}
+
+#homeSection::before {
+    content: "♡";
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    color: rgba(238, 170, 190, 0.12);
+    font-size: 100px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: -1;
+}
+
+#homeSection h1,
+#homeSection h2,
+#homeSection h3 {
+    color: #f5d5df;
+    letter-spacing: 0.5px;
+}
+
+#recentMemories {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 18px;
+    margin-top: 20px;
+}
+
+#recentMemories .media-card {
+    min-width: 0;
+    overflow: hidden;
+    padding: 12px;
+    border: 1px solid rgba(225, 163, 184, 0.25);
+    border-radius: 20px;
+    background: linear-gradient(
+        145deg,
+        rgba(65, 35, 47, 0.85),
+        rgba(20, 17, 20, 0.96)
+    );
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.22);
+    transition: transform 0.2s ease,
+                border-color 0.2s ease;
+}
+
+#recentMemories .media-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(238, 170, 190, 0.65);
+}
+
+#recentMemories .media-image,
+#recentMemories .media-video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 14px;
+    background: #171217;
+}
+
+#recentMemories .media-info {
+    padding: 10px 4px 4px;
+    color: #f2dce4;
+    overflow-wrap: anywhere;
+}
+
+#recentMemories .home-music-preview {
+    padding: 16px 8px;
+    text-align: center;
+}
+
+#recentMemories .home-music-icon {
+    margin-bottom: 10px;
+    font-size: 42px;
+}
+
+#recentMemories .home-play-button {
+    margin-top: 12px;
+    padding: 10px 18px;
+    border: 1px solid #c989a0;
+    border-radius: 24px;
+    background: #9b536e;
+    color: white;
+    cursor: pointer;
+}
+
+#recentMemories .home-play-button:hover {
+    background: #b66c88;
+}
+
+@media (max-width: 480px) {
+    #homeSection {
+        padding: 18px 12px;
+    }
+
+    #recentMemories {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    #recentMemories .media-card {
+        padding: 8px;
+        border-radius: 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #recentMemories .media-card {
+        transition: none;
+    }
+
+    #recentMemories .media-card:hover {
+        transform: none;
+    }
+}
