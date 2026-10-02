@@ -4499,3 +4499,27 @@ function closeMusicPlayer() {
         button.textContent = "▶";
     }
 }
+function restoreMusicPlayer() {
+
+    const controls =
+        document.getElementById(
+            "musicPlayerControls"
+        );
+
+    const player =
+        document.getElementById(
+            "musicPlayer"
+        );
+
+    if (!controls || !player) {
+        return;
+    }
+
+    controls.classList.remove(
+        "hidden"
+    );
+
+    player.classList.remove(
+        "music-player-minimized"
+    );
+}
