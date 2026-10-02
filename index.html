@@ -532,6 +532,55 @@
 
                     <div class="settings-card">
                         <h3>✨ Appearance</h3>
+                        
+
+<div class="settings-card">
+    <h3>🌌 Entire Website Background</h3>
+
+    <p>Choose a photo to appear behind the whole website.</p>
+
+    <label for="siteBackgroundSource">Photo source</label>
+    <select id="siteBackgroundSource">
+        <option value="gallery">Choose from my gallery</option>
+        <option value="upload">Upload my own photo</option>
+    </select>
+
+    <div id="siteGalleryPickerWrap">
+        <label for="siteBackgroundPhoto">Gallery photo</label>
+        <select id="siteBackgroundPhoto">
+            <option value="">Loading gallery photos...</option>
+        </select>
+    </div>
+
+    <div id="siteUploadPickerWrap" hidden>
+        <label for="siteBackgroundUpload">Upload background photo</label>
+        <input
+            type="file"
+            id="siteBackgroundUpload"
+            accept="image/*">
+    </div>
+
+    <label for="siteBackgroundBrightness">Background brightness</label>
+    <input
+        type="range"
+        id="siteBackgroundBrightness"
+        min="20"
+        max="100"
+        value="45">
+
+    <div id="siteBackgroundPreview" class="hero-preview">
+        <span>Your website background preview ❤️</span>
+    </div>
+
+    <div class="settings-actions">
+        <button type="button" id="previewSiteBackgroundButton">
+            Preview
+        </button>
+        <button type="button" id="resetSiteBackgroundButton">
+            Reset
+        </button>
+    </div>
+</div>
 
                         <label for="siteTheme">Website theme</label>
                         <select id="siteTheme">
