@@ -1876,9 +1876,10 @@ async function loadPhotos(
 
             if (card) {
 
-                grid.appendChild(
-                    card
-                );
+                grid.insertAdjacentHTML(
+    "beforeend",
+    card
+);
 
             }
 
@@ -1954,9 +1955,10 @@ async function loadVideos(
 
             if (card) {
 
-                grid.appendChild(
-                    card
-                );
+                grid.insertAdjacentHTML(
+    "beforeend",
+    card
+);
 
             }
 
@@ -1978,35 +1980,23 @@ async function loadVideos(
    LOAD MUSIC
    ========================================= */
 
-function loadMusic(
-    records
-) {
+function loadMusic(records) {
 
-    const list =
-        $("musicList");
-
+    const list = $("musicList");
 
     if (!list) {
         return;
     }
 
-
     list.innerHTML = "";
 
+    currentPlaylist = records.filter(
+        function (item) {
+            return item.file_type === "music";
+        }
+    );
 
-    currentPlaylist =
-        records.filter(
-            function (item) {
-
-                return item.file_type === "music";
-
-            }
-        );
-
-
-    if (
-        currentPlaylist.length === 0
-    ) {
+    if (currentPlaylist.length === 0) {
 
         list.innerHTML = `
             <div class="empty-state">
@@ -2016,9 +2006,7 @@ function loadMusic(
         `;
 
         return;
-
     }
-
 
     currentPlaylist.forEach(
         function (item, index) {
@@ -2029,8 +2017,8 @@ function loadMusic(
                     index
                 );
 
-
-            list.appendChild(
+            list.insertAdjacentHTML(
+                "beforeend",
                 row
             );
 
@@ -2038,7 +2026,6 @@ function loadMusic(
     );
 
 }
-
 
 /* =========================================
    UPDATE COUNTS
@@ -3131,3 +3118,93 @@ async function refreshMediaUrl(
 initializeAudioPlayer();
 
 initializeMessageForm();
+/* =========================================
+   FAVORITE + DATE HELPERS
+   ========================================= */
+
+function formatMemoryDate(dateValue) {
+    if (!dateValue) {
+        return "";
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleDateString(
+        undefined,
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    );
+}
+
+
+async function toggleMediaFavorite(id, currentValue) {
+    try {
+        requireSupabase();
+
+        const { error } = await supabaseClient
+            .from(MEDIA_TABLE)
+            .update({
+                is_favorite: !currentValue
+            })
+            .eq("id", id);
+
+        if (error) {
+            throw error;
+        }
+
+        showNotification(
+            !currentValue
+                ? "Added to favorites ❤️"
+                : "Removed from favorites",
+            "❤️"
+        );
+
+        await loadAllMemories();
+
+    } catch (error) {
+        console.error(
+            "Favorite update error:",
+            error
+        );
+
+        showNotification(
+            "Could not update favorite.",
+            "⚠️"
+        );
+    }
+}
+
+
+async function confirmDeleteMedia(item) {
+
+    if (!item || !item.id) {
+        return;
+    }
+
+    const confirmed = confirm(
+        `Delete "${item.file_name}"?\n\nThis cannot be undone.`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const deleted =
+        await deleteMedia(item);
+
+    if (deleted) {
+        showNotification(
+            "Memory deleted.",
+            "🗑️"
+        );
+
+        await loadAllMemories();
+    }
+}
