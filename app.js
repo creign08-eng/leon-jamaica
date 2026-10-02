@@ -1154,6 +1154,8 @@ async function initializeApp() {
    
     loadHeroGalleryPhotos();
 
+    initializeSiteBackgroundSettings();
+ 
 
     const messageButton =
         $("addMessageButton");
@@ -3232,20 +3234,79 @@ function updateHeroSourceControls() {
     }
 }
 
-function updateHeroPreview() {
-    const preview =
-        document.getElementById("heroPreview");
 
-    const brightness =
-        Number(document.getElementById("heroBrightness")?.value || 75);
+function updateHeroPreview() {
+    const preview = document.getElementById("heroPreview");
+    if (!preview) return;
+
+    const brightness = Number(
+        document.getElementById("heroBrightness")?.value || 75
+    );
 
     const position =
         document.getElementById("heroPosition")?.value || "center";
 
-    if (!preview) return;
+    const source =
+        document.getElementById("heroPhotoSource")?.value;
 
-    preview.style.filter = `brightness(${brightness}%)`;
+    let imageUrl = "";
+
+    if (source === "upload") {
+        const file =
+            document.getElementById("heroPhotoUpload")?.files?.[0];
+
+        if (file) {
+            if (window._heroPreviewUrl) {
+                URL.revokeObjectURL(window._heroPreviewUrl);
+            }
+
+            window._heroPreviewUrl = URL.createObjectURL(file);
+            imageUrl = window._heroPreviewUrl;
+        }
+    } else {
+        imageUrl =
+            document.getElementById("heroGalleryPhoto")
+                ?.selectedOptions?.[0]?.dataset?.imageUrl || "";
+    }
+
     preview.style.backgroundPosition = position;
+    preview.style.backgroundSize = "cover";
+    preview.style.filter = `brightness(${brightness}%)`;
+
+    if (imageUrl) {
+        preview.style.backgroundImage = `url("${imageUrl}")`;
+        preview.innerHTML = "";
+    } else {
+        preview.style.backgroundImage =
+            "linear-gradient(135deg, #573642, #090909)";
+
+        preview.innerHTML =
+            "<span>Choose or upload a photo to preview ❤️</span>";
+    }
+
+    const applyButton = document.getElementById("previewHeroButton");
+
+    if (applyButton) {
+        applyButton.onclick = () => {
+            const hero = document.querySelector(".hero-section");
+
+            if (!hero || !imageUrl) {
+                setSettingsStatus("Choose a photo first.");
+                return;
+            }
+
+            hero.style.backgroundImage =
+                `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url("${imageUrl}")`;
+
+            hero.style.backgroundPosition = position;
+            hero.style.backgroundSize = "cover";
+            hero.style.backgroundRepeat = "no-repeat";
+
+            setSettingsStatus(
+                "Hero background preview applied. Save/persistence is not connected yet."
+            );
+        };
+    }
 }
 
 function setSettingsStatus(message) {
@@ -3587,4 +3648,198 @@ async function loadHeroGalleryPhotos() {
         select.innerHTML = "";
         select.add(new Option("Could not load photos", ""));
     }
+}
+
+/* =========================================
+   ENTIRE WEBSITE BACKGROUND
+   ========================================= */
+
+async function loadSiteBackgroundGallery() {
+    const select = document.getElementById("siteBackgroundPhoto");
+    if (!select) return;
+
+    try {
+        const records = await getMediaRecords();
+
+        select.innerHTML = "";
+        select.add(new Option("Choose a photo...", ""));
+
+        const photos = (records || []).filter(item =>
+            item.file_type === "photo" ||
+            item.file_type === "image" ||
+            (item.mime_type || "").startsWith("image/")
+        );
+
+        for (const photo of photos) {
+            const url = await getSignedUrl(photo.file_path);
+            if (!url) continue;
+
+            const option = new Option(
+                photo.file_name || "Gallery photo",
+                photo.file_path
+            );
+
+            option.dataset.imageUrl = url;
+            select.add(option);
+        }
+
+        updateSiteBackgroundPreview();
+
+    } catch (error) {
+        console.error("Website background gallery error:", error);
+        select.innerHTML = "";
+        select.add(new Option("Could not load photos", ""));
+    }
+}
+
+function updateSiteBackgroundSource() {
+    const source =
+        document.getElementById("siteBackgroundSource")?.value;
+
+    const galleryWrap =
+        document.getElementById("siteGalleryPickerWrap");
+
+    const uploadWrap =
+        document.getElementById("siteUploadPickerWrap");
+
+    if (galleryWrap) galleryWrap.hidden = source !== "gallery";
+    if (uploadWrap) uploadWrap.hidden = source !== "upload";
+
+    updateSiteBackgroundPreview();
+}
+
+function updateSiteBackgroundPreview() {
+    const preview =
+        document.getElementById("siteBackgroundPreview");
+
+    if (!preview) return;
+
+    const source =
+        document.getElementById("siteBackgroundSource")?.value;
+
+    const brightness = Number(
+        document.getElementById("siteBackgroundBrightness")?.value || 45
+    );
+
+    let imageUrl = "";
+
+    if (source === "upload") {
+        const file =
+            document.getElementById("siteBackgroundUpload")
+                ?.files?.[0];
+
+        if (file) {
+            if (window._siteBackgroundPreviewUrl) {
+                URL.revokeObjectURL(window._siteBackgroundPreviewUrl);
+            }
+
+            window._siteBackgroundPreviewUrl =
+                URL.createObjectURL(file);
+
+            imageUrl = window._siteBackgroundPreviewUrl;
+        }
+    } else {
+        imageUrl =
+            document.getElementById("siteBackgroundPhoto")
+                ?.selectedOptions?.[0]?.dataset?.imageUrl || "";
+    }
+
+    preview.style.filter = `brightness(${brightness}%)`;
+    preview.style.backgroundSize = "cover";
+    preview.style.backgroundPosition = "center";
+
+    if (imageUrl) {
+        preview.style.backgroundImage = `url("${imageUrl}")`;
+        preview.innerHTML = "";
+    } else {
+        preview.style.backgroundImage =
+            "linear-gradient(135deg, #573642, #090909)";
+
+        preview.innerHTML =
+            "<span>Choose a gallery photo or upload your own ❤️</span>";
+    }
+}
+
+function initializeSiteBackgroundSettings() {
+    document.getElementById("siteBackgroundSource")
+        ?.addEventListener("change", updateSiteBackgroundSource);
+
+    document.getElementById("siteBackgroundPhoto")
+        ?.addEventListener("change", updateSiteBackgroundPreview);
+
+    document.getElementById("siteBackgroundUpload")
+        ?.addEventListener("change", updateSiteBackgroundPreview);
+
+    document.getElementById("siteBackgroundBrightness")
+        ?.addEventListener("input", updateSiteBackgroundPreview);
+
+    document.getElementById("previewSiteBackgroundButton")
+        ?.addEventListener("click", () => {
+            updateSiteBackgroundPreview();
+
+            const source =
+                document.getElementById("siteBackgroundSource")?.value;
+
+            let imageUrl = "";
+
+            if (source === "upload") {
+                imageUrl = window._siteBackgroundPreviewUrl || "";
+            } else {
+                imageUrl =
+                    document.getElementById("siteBackgroundPhoto")
+                        ?.selectedOptions?.[0]?.dataset?.imageUrl || "";
+            }
+
+            if (!imageUrl) {
+                setSettingsStatus("Choose a website background photo first.");
+                return;
+            }
+
+            const brightness = Number(
+                document.getElementById("siteBackgroundBrightness")?.value || 45
+            );
+
+            document.body.style.backgroundImage =
+                `linear-gradient(rgba(0,0,0,${1 - brightness / 100}), rgba(0,0,0,${1 - brightness / 100})), url("${imageUrl}")`;
+
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundPosition = "center";
+            document.body.style.backgroundAttachment = "fixed";
+            document.body.style.backgroundRepeat = "no-repeat";
+
+            setSettingsStatus(
+                "Website background preview applied. Saving across devices is not connected yet."
+            );
+        });
+
+    document.getElementById("resetSiteBackgroundButton")
+        ?.addEventListener("click", () => {
+            const source =
+                document.getElementById("siteBackgroundSource");
+
+            const photo =
+                document.getElementById("siteBackgroundPhoto");
+
+            const upload =
+                document.getElementById("siteBackgroundUpload");
+
+            const brightness =
+                document.getElementById("siteBackgroundBrightness");
+
+            if (source) source.value = "gallery";
+            if (photo) photo.value = "";
+            if (upload) upload.value = "";
+            if (brightness) brightness.value = 45;
+
+            document.body.style.backgroundImage = "";
+            document.body.style.backgroundSize = "";
+            document.body.style.backgroundPosition = "";
+            document.body.style.backgroundAttachment = "";
+            document.body.style.backgroundRepeat = "";
+
+            updateSiteBackgroundSource();
+            setSettingsStatus("Website background reset for this page.");
+        });
+
+    loadSiteBackgroundGallery();
 }
