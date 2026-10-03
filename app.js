@@ -281,6 +281,7 @@ async function openApp() {
     await loadHeroGalleryPhotos();
     await loadSiteBackgroundGallery();
     await loadSavedSiteBackground();
+    await loadMusicGalleryPhotos();
    }
 
 
