@@ -651,7 +651,43 @@ function showNotification(
 
 }
 
+/* =========================================
+   FULL-SCREEN PHOTO NAVIGATION
+   ========================================= */
 
+let viewerPhotoList = [];
+let viewerPhotoIndex = 0;
+
+function setViewerPhoto(index) {
+
+    if (
+        index < 0 ||
+        index >= viewerPhotoList.length
+    ) {
+        return;
+    }
+
+    viewerPhotoIndex = index;
+
+    const photo = viewerPhotoList[index];
+
+    openImageViewer(
+        photo.signed_url || "",
+        photo.caption || photo.file_name || "Memory"
+    );
+}
+
+function showPreviousViewerPhoto() {
+    if (viewerPhotoIndex > 0) {
+        setViewerPhoto(viewerPhotoIndex - 1);
+    }
+}
+
+function showNextViewerPhoto() {
+    if (viewerPhotoIndex < viewerPhotoList.length - 1) {
+        setViewerPhoto(viewerPhotoIndex + 1);
+    }
+}
 /* =========================================
    IMAGE VIEWER
    ========================================= */
