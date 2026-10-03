@@ -1388,3 +1388,31 @@ button {
         transition-duration: 0.01ms !important;
     }
 }
+.media-caption {
+    width: 100%;
+    min-height: 45px;
+    padding: 10px 12px;
+    margin: 0 0 10px 0;
+
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+
+    resize: vertical;
+    outline: none;
+}
+
+.media-caption::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.media-caption:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.12);
+}
