@@ -277,6 +277,11 @@ async function openApp() {
     if (!supabaseClient) {
         await initializeSupabase();
     }
+   if (supabaseClient) {
+    await loadHeroGalleryPhotos();
+    await loadSiteBackgroundGallery();
+    await loadSavedSiteBackground();
+   }
 
 
     /*
