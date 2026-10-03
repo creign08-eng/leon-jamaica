@@ -1946,12 +1946,11 @@ function createVideoCard(item) {
             <div class="media-info">
 
                 <textarea
-                    class="media-caption"
-                    placeholder="Write something about this memory..."
-                    data-media-id="${item.id}"
-                    onblur="saveMediaCaption('${item.id}', this.value)"
-                >${escapeHtml(item.caption || "")}</textarea>
-
+    class="media-caption"
+    placeholder="Write something about this memory..."
+    data-media-id="${item.id}"
+    onblur="saveMediaCaption('${item.id}', this.value)"
+>${escapeHtml(item.caption || "")}</textarea>
                 <div class="memory-date">
                     📅 ${formatMemoryDate(item.created_at)}
                 </div>
