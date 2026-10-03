@@ -1416,3 +1416,32 @@ button {
     border-color: rgba(255, 255, 255, 0.4);
     background: rgba(255, 255, 255, 0.12);
 }
+.caption-editor {
+    width: 100%;
+}
+
+.save-caption-button {
+    width: 100%;
+    padding: 9px 12px;
+    margin-bottom: 10px;
+
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.save-caption-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.save-caption-button:active {
+    transform: scale(0.98);
+}
