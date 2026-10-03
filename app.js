@@ -670,6 +670,19 @@ function openImageViewerForPhoto(photoId) {
     setViewerPhoto(photoIndex);
 }
 
+
+function openImageViewerForPhoto(photoId) {
+    const photoIndex = viewerPhotoList.findIndex(
+        photo => String(photo.id) === String(photoId)
+    );
+
+    if (photoIndex === -1) {
+        return;
+    }
+
+    setViewerPhoto(photoIndex);
+}
+
 function setViewerPhoto(index) {
 
     if (
