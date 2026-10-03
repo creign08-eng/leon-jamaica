@@ -809,6 +809,22 @@ function closeImageViewer() {
 
     document.body.style.overflow =
         "";
+   const previousButton = $("previousViewerImage");
+const nextButton = $("nextViewerImage");
+
+if (previousButton) {
+    previousButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        showPreviousViewerPhoto();
+    });
+}
+
+if (nextButton) {
+    nextButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        showNextViewerPhoto();
+    });
+    }
 
 }
 
@@ -2086,6 +2102,12 @@ async function loadPhotos(records) {
     const photos = (records || []).filter(
         item => item.file_type === "photo"
     );
+   viewerPhotoList = photos.map(item => ({
+    ...item,
+    signed_url: "",
+}));
+
+viewerPhotoIndex = 0;
 
     if (photos.length === 0) {
         grid.innerHTML = `
@@ -2106,10 +2128,18 @@ async function loadPhotos(records) {
                 continue;
             }
 
-            const card = createPhotoCard({
-                ...item,
-                signed_url: url
-            });
+            const photoIndex = viewerPhotoList.findIndex(
+    photo => String(photo.id) === String(item.id)
+);
+
+if (photoIndex !== -1) {
+    viewerPhotoList[photoIndex].signed_url = url;
+}
+
+const card = createPhotoCard({
+    ...item,
+    signed_url: url
+});
 
             grid.insertAdjacentHTML("beforeend", card);
         } catch (error) {
