@@ -658,6 +658,18 @@ function showNotification(
 let viewerPhotoList = [];
 let viewerPhotoIndex = 0;
 
+function openImageViewerForPhoto(photoId) {
+    const photoIndex = viewerPhotoList.findIndex(
+        photo => String(photo.id) === String(photoId)
+    );
+
+    if (photoIndex === -1) {
+        return;
+    }
+
+    setViewerPhoto(photoIndex);
+}
+
 function setViewerPhoto(index) {
 
     if (
