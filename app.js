@@ -1910,7 +1910,7 @@ function createPhotoCard(item) {
                     src="${url}"
                     alt="${escapeHtml(item.file_name)}"
                     class="media-image"
-                    onclick="openImageViewer('${url}', '${escapeHtml(item.file_name)}')"
+                    onclick="openImageViewerForPhoto('${item.id}')"
                 >
             </div>
 
