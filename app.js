@@ -1827,6 +1827,40 @@ function initializeUploadHandler() {
 
 }
 /* =========================================
+   SAVE MEDIA CAPTION
+   ========================================= */
+
+async function saveMediaCaption(mediaId, caption) {
+
+    try {
+
+        requireSupabase();
+
+        const {
+            error
+        } = await supabaseClient
+            .from("media")
+            .update({
+                caption: caption.trim() || null
+            })
+            .eq("id", mediaId);
+
+        if (error) {
+            throw error;
+        }
+
+        console.log("Media caption saved.");
+
+    } catch (error) {
+
+        console.error(
+            "Error saving media caption:",
+            error
+        );
+
+    }
+}
+/* =========================================
    CREATE IMAGE CARD
    ========================================= */
 
@@ -1845,9 +1879,13 @@ function createPhotoCard(item) {
             </div>
 
             <div class="media-info">
-                <div class="media-title">
-                    ${escapeHtml(item.file_name)}
-                </div>
+
+                <textarea
+                    class="media-caption"
+                    placeholder="Write something about this memory..."
+                    data-media-id="${item.id}"
+                    onblur="saveMediaCaption('${item.id}', this.value)"
+                >${escapeHtml(item.caption || "")}</textarea>
 
                 <div class="memory-date">
                     📅 ${formatMemoryDate(item.created_at)}
@@ -1868,6 +1906,7 @@ function createPhotoCard(item) {
                         🗑️
                     </button>
                 </div>
+
             </div>
         </div>
     `;
@@ -1897,9 +1936,13 @@ function createVideoCard(item) {
             </div>
 
             <div class="media-info">
-                <div class="media-title">
-                    ${escapeHtml(item.file_name)}
-                </div>
+
+                <textarea
+                    class="media-caption"
+                    placeholder="Write something about this memory..."
+                    data-media-id="${item.id}"
+                    onblur="saveMediaCaption('${item.id}', this.value)"
+                >${escapeHtml(item.caption || "")}</textarea>
 
                 <div class="memory-date">
                     📅 ${formatMemoryDate(item.created_at)}
@@ -1920,6 +1963,7 @@ function createVideoCard(item) {
                         🗑️
                     </button>
                 </div>
+
             </div>
         </div>
     `;
