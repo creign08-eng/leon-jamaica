@@ -1880,12 +1880,20 @@ function createPhotoCard(item) {
 
             <div class="media-info">
 
-                <textarea
-                    class="media-caption"
-                    placeholder="Write something about this memory..."
-                    data-media-id="${item.id}"
-                    onblur="saveMediaCaption('${item.id}', this.value)"
-                >${escapeHtml(item.caption || "")}</textarea>
+                <div class="caption-editor">
+    <textarea
+        class="media-caption"
+        placeholder="Write something about this memory..."
+        data-media-id="${item.id}"
+    >${escapeHtml(item.caption || "")}</textarea>
+
+    <button
+        class="save-caption-button"
+        onclick="saveMediaCaption('${item.id}', this.previousElementSibling.value)"
+    >
+        💾 Save
+    </button>
+</div>
 
                 <div class="memory-date">
                     📅 ${formatMemoryDate(item.created_at)}
