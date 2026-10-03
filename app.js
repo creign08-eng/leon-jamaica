@@ -1151,10 +1151,12 @@ async function initializeApp() {
     initializeSettingsControls();
    
     initializeMusicBackgroundSettings();
-   
-    loadHeroGalleryPhotos();
 
-    initializeSiteBackgroundSettings();
+loadHeroGalleryPhotos();
+
+initializeSiteBackgroundSettings();
+
+loadSavedSiteBackground();
  
 
     const messageButton =
@@ -1403,7 +1405,59 @@ async function saveSiteBackgroundSettings(
 
     return result.data;
 }
+/* =========================================
+   APPLY SAVED SITE BACKGROUND
+   ========================================= */
 
+async function loadSavedSiteBackground() {
+
+    try {
+
+        const settings =
+            await getSiteBackgroundSettings();
+
+        if (!settings?.background_path) {
+            return;
+        }
+
+        const imageUrl =
+            await getSignedUrl(
+                settings.background_path
+            );
+
+        if (!imageUrl) {
+            return;
+        }
+
+        const brightness =
+            Number(
+                settings.background_brightness ?? 45
+            );
+
+        const darkness =
+            1 - brightness / 100;
+
+        document.body.style.backgroundImage =
+            `linear-gradient(
+                rgba(0,0,0,${darkness}),
+                rgba(0,0,0,${darkness})
+            ), url("${imageUrl}")`;
+
+        document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundPosition = "center";
+        document.body.style.backgroundAttachment = "fixed";
+        document.body.style.backgroundRepeat = "no-repeat";
+
+    } catch (error) {
+
+        console.error(
+            "Error loading saved website background:",
+            error
+        );
+
+    }
+
+}
 /* =========================================
    UPLOAD FILE
    ========================================= */
